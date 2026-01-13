@@ -1,0 +1,12 @@
+IF
+	G("GHAST-CLOAK",0)
+	!Contains("ANIITM_#",Myself)
+THEN
+	RESPONSE #1
+		CreateCreature("GHAST",[266.516],NE)
+		CreateCreature("GHAST",[206.473],NE)
+		DisplayStringNoName(Player1,@57)
+		PlaySound("GHAST04")
+		SG("GHAST-CLOAK",1)
+END
+

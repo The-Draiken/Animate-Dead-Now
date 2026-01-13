@@ -1,0 +1,94 @@
+IF
+
+!Alignment(Myself,LAWFUL_EVIL)
+!Alignment(Myself,NEUTRAL_EVIL)
+!Alignment(Myself,CHAOTIC_EVIL)
+Global("FIRST","LOCALS",0)
+
+THEN
+
+RESPONSE #2
+
+SetGabber(Player1)
+DisplayString(Myself,@58)
+SwingOnce()
+ReputationInc(1)
+SetGlobal("FIRST","LOCALS",1)
+EscapeArea()
+
+RESPONSE #3
+
+DisplayString(Myself,@59)
+SwingOnce()
+ReputationInc(1)
+SetGlobal("FIRST","LOCALS",1)
+EscapeArea()
+
+RESPONSE #3
+
+DisplayString(Myself,@60)
+SwingOnce()
+ReputationInc(1)
+SetGlobal("FIRST","LOCALS",1)
+EscapeArea()
+
+RESPONSE #3
+
+DisplayString(Myself,@61)
+SwingOnce()
+ReputationInc(1)
+SetGlobal("FIRST","LOCALS",1)
+EscapeArea()
+
+RESPONSE #3
+
+SetGabber(Myself)
+DisplayString(Myself,@62)
+SwingOnce()
+ReputationInc(1)
+SetGlobal("FIRST","LOCALS",1)
+EscapeArea()
+
+END
+
+IF
+
+True()
+
+THEN
+
+RESPONSE #2
+
+DisplayString(Myself,@63)
+SetGlobal("FIRST","LOCALS",1)
+EscapeArea()
+
+RESPONSE #3
+
+DisplayString(Myself,@64)
+SetGlobal("FIRST","LOCALS",1)
+EscapeArea()
+
+RESPONSE #3
+
+DisplayString(Myself,@65)
+SetGlobal("FIRST","LOCALS",1)
+EscapeArea()
+
+RESPONSE #15
+SetGlobal("FIRST","LOCALS",1)
+EscapeArea()
+
+END
+
+IF
+
+Global("FIRST","LOCALS",1)
+
+THEN
+
+RESPONSE #1
+
+EscapeArea()
+
+END

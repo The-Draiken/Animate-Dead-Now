@@ -1,0 +1,496 @@
+IF
+	OnCreation()
+	OR(7)
+		!StateCheck(LastSummonerOf,STATE_DEAD)
+		StateCheck(LastSummonerOf,STATE_ACID_DEATH)
+		StateCheck(LastSummonerOf,STATE_STONE_DEATH)
+		StateCheck(LastSummonerOf,STATE_FROZEN_DEATH)
+		StateCheck(LastSummonerOf,STATE_EXPLODING_DEATH)
+		InParty(LastSummonerOf)
+		Global("XZARPETS","GLOBAL",0)
+		Global("DOING-IT","LOCALS",0)
+		THEN
+	RESPONSE #1
+		DestroySelf()
+END
+
+IF
+
+GlobalGT("XZARPETS","GLOBAL",0)
+Global("DOING-IT","LOCALS",0)
+Level(LastSummonerOf,1)
+
+THEN
+
+RESPONSE #1
+
+IncrementGlobal("XZARPETS","GLOBAL",-1)
+SetGlobal("DOING-IT","LOCALS",1)
+
+END
+
+IF
+
+GlobalGT("XZARPETS","GLOBAL",1)
+Global("DOING-IT","LOCALS",0)
+Level(LastSummonerOf,2)
+
+THEN
+
+RESPONSE #1
+
+IncrementGlobal("XZARPETS","GLOBAL",-2)
+SetGlobal("DOING-IT","LOCALS",1)
+
+END
+
+IF
+
+GlobalGT("XZARPETS","GLOBAL",2)
+Global("DOING-IT","LOCALS",0)
+Level(LastSummonerOf,3)
+
+THEN
+
+RESPONSE #1
+
+IncrementGlobal("XZARPETS","GLOBAL",-3)
+SetGlobal("DOING-IT","LOCALS",1)
+
+END
+
+IF
+
+GlobalGT("XZARPETS","GLOBAL",3)
+Global("DOING-IT","LOCALS",0)
+Level(LastSummonerOf,4)
+
+THEN
+
+RESPONSE #1
+
+IncrementGlobal("XZARPETS","GLOBAL",-4)
+SetGlobal("DOING-IT","LOCALS",1)
+
+END
+
+IF
+
+GlobalGT("XZARPETS","GLOBAL",4)
+Global("DOING-IT","LOCALS",0)
+Level(LastSummonerOf,5)
+
+THEN
+
+RESPONSE #1
+
+IncrementGlobal("XZARPETS","GLOBAL",-5)
+SetGlobal("DOING-IT","LOCALS",1)
+
+END
+
+IF
+
+GlobalGT("XZARPETS","GLOBAL",5)
+Global("DOING-IT","LOCALS",0)
+Level(LastSummonerOf,6)
+
+THEN
+
+RESPONSE #1
+
+IncrementGlobal("XZARPETS","GLOBAL",-6)
+SetGlobal("DOING-IT","LOCALS",1)
+
+END
+
+IF
+	Global("DOING-IT","LOCALS",1)
+	TriggerOverride(LastSummonerOf,Global("PCPCPC","LOCALS",0))
+	TriggerOverride(LastSummonerOf,Global("ANIHUMAN","LOCALS",0))
+	TriggerOverride(LastSummonerOf,Global("ANISMALL","LOCALS",0))
+	TriggerOverride(LastSummonerOf,Global("ANIBIG","LOCALS",0))
+	TriggerOverride(LastSummonerOf,Global("ANIOTHER","LOCALS",0))
+THEN
+	RESPONSE #1
+		ReallyForceSpellRES("ANIGHO_#",LastSummonerOf) 
+		SmallWait(12)
+		SetPlayerSound(LastSummonerOf,0,INITIAL_MEETING)  // <NO TEXT>
+		SetPlayerSound(LastSummonerOf,0,ATTACK1)  // <NO TEXT>
+		SetPlayerSound(LastSummonerOf,0,ATTACK2)  // <NO TEXT>
+		SetPlayerSound(LastSummonerOf,0,BATTLE_CRY1)  // <NO TEXT>
+		SetPlayerSound(LastSummonerOf,0,SELECT_COMMON1)  // <NO TEXT>
+		SetPlayerSound(LastSummonerOf,0,SELECT_COMMON2)  // <NO TEXT>
+		SetPlayerSound(LastSummonerOf,0,SELECT_COMMON3)  // <NO TEXT>
+		SetPlayerSound(LastSummonerOf,0,SELECT_ACTION1)  // <NO TEXT>
+		SetPlayerSound(LastSummonerOf,0,SELECT_ACTION2)  // <NO TEXT>
+		SetPlayerSound(LastSummonerOf,0,SELECT_ACTION3)  // <NO TEXT>
+		SetPlayerSound(LastSummonerOf,0,PICKED_POCKET)  // <NO TEXT>
+		SetPlayerSound(LastSummonerOf,0,HIDDEN_IN_SHADOWS)  // <NO TEXT>
+		SetPlayerSound(LastSummonerOf,0,SET_A_TRAP)  // <NO TEXT>
+		SetPlayerSound(LastSummonerOf,0,EXISTANCE4)  // <NO TEXT>
+		SetPlayerSound(LastSummonerOf,0,DAMAGE)  // <NO TEXT>
+		SetPlayerSound(LastSummonerOf,0,HURT)  // <NO TEXT>
+		SetPlayerSound(LastSummonerOf,0,DYING)  // <NO TEXT>
+		
+		Continue()
+END
+
+IF
+	Global("DOING-IT","LOCALS",1)
+	TriggerOverride(LastSummonerOf,Global("PCPCPC","LOCALS",1))
+	TriggerOverride(LastSummonerOf,Global("ANIHUMAN","LOCALS",0))
+	TriggerOverride(LastSummonerOf,Global("ANISMALL","LOCALS",0))
+	TriggerOverride(LastSummonerOf,Global("ANIBIG","LOCALS",0))
+	TriggerOverride(LastSummonerOf,Global("ANIOTHER","LOCALS",0))
+THEN
+	RESPONSE #1
+		SetPlayerSound(LastSummonerOf,0,INITIAL_MEETING)  // <NO TEXT>
+		SetPlayerSound(LastSummonerOf,0,ATTACK1)  // <NO TEXT>
+		SetPlayerSound(LastSummonerOf,0,ATTACK2)  // <NO TEXT>
+		SetPlayerSound(LastSummonerOf,0,BATTLE_CRY1)  // <NO TEXT>
+		SetPlayerSound(LastSummonerOf,0,SELECT_RARE1)  // <NO TEXT>
+		SetPlayerSound(LastSummonerOf,0,SELECT_RARE2)  // <NO TEXT>
+		SetPlayerSound(LastSummonerOf,0,SELECT_COMMON1)  // <NO TEXT>
+		SetPlayerSound(LastSummonerOf,0,SELECT_COMMON2)  // <NO TEXT>
+		SetPlayerSound(LastSummonerOf,0,SELECT_COMMON3)  // <NO TEXT>
+		SetPlayerSound(LastSummonerOf,0,SELECT_COMMON4)  // <NO TEXT>
+		SetPlayerSound(LastSummonerOf,0,SELECT_ACTION1)  // <NO TEXT>
+		SetPlayerSound(LastSummonerOf,0,SELECT_ACTION2)  // <NO TEXT>
+		SetPlayerSound(LastSummonerOf,0,SELECT_ACTION3)  // <NO TEXT>
+		SetPlayerSound(LastSummonerOf,0,SELECT_ACTION4)  // <NO TEXT>
+		SetPlayerSound(LastSummonerOf,0,SELECT_ACTION5)  // <NO TEXT>
+		SetPlayerSound(LastSummonerOf,0,SELECT_ACTION6)  // <NO TEXT>
+		SetPlayerSound(LastSummonerOf,0,SELECT_ACTION7)  // <NO TEXT>
+		SetPlayerSound(LastSummonerOf,0,PICKED_POCKET)  // <NO TEXT>
+		SetPlayerSound(LastSummonerOf,0,HIDDEN_IN_SHADOWS)  // <NO TEXT>
+		SetPlayerSound(LastSummonerOf,0,RESPONSE_TO_INSULT1)  // <NO TEXT>
+		SetPlayerSound(LastSummonerOf,0,RESPONSE_TO_INSULT2)  // <NO TEXT>
+		SetPlayerSound(LastSummonerOf,0,RESPONSE_TO_INSULT3)  // <NO TEXT>
+		SetPlayerSound(LastSummonerOf,0,INSULT1)  // <NO TEXT>
+		SetPlayerSound(LastSummonerOf,0,INSULT2)  // <NO TEXT>
+		SetPlayerSound(LastSummonerOf,0,INSULT3)  // <NO TEXT>
+		SetPlayerSound(LastSummonerOf,0,REACT_TO_DIE_GENERAL)  // <NO TEXT>
+		SetPlayerSound(LastSummonerOf,0,REACT_TO_DIE_SPECIFIC)  // <NO TEXT>
+		SetPlayerSound(LastSummonerOf,0,INTERACTION1)  // <NO TEXT>
+		SetPlayerSound(LastSummonerOf,0,INTERACTION2)  // <NO TEXT>
+		SetPlayerSound(LastSummonerOf,0,INTERACTION3)  // <NO TEXT>
+		SetPlayerSound(LastSummonerOf,0,INTERACTION4)  // <NO TEXT>
+		ReallyForceSpellRES("ANIGHO_#",LastSummonerOf) 
+		SmallWait(12)
+		SetPlayerSound(LastSummonerOf,0,INTERACTION5)  // <NO TEXT>
+		SetPlayerSound(LastSummonerOf,0,AREA_NIGHT)  // <NO TEXT>
+		SetPlayerSound(LastSummonerOf,0,AREA_CITY)  // <NO TEXT>
+		SetPlayerSound(LastSummonerOf,0,AREA_DUNGEON)  // <NO TEXT>
+		SetPlayerSound(LastSummonerOf,0,INTERACTION5)  // <NO TEXT>
+		SetPlayerSound(LastSummonerOf,0,AREA_DAY)  // <NO TEXT>
+		SetPlayerSound(LastSummonerOf,0,AREA_FOREST)  // <NO TEXT>
+		SetPlayerSound(LastSummonerOf,0,COMPLIMENT1)  // <NO TEXT>
+		SetPlayerSound(LastSummonerOf,0,COMPLIMENT2)  // <NO TEXT>
+		SetPlayerSound(LastSummonerOf,0,COMPLIMENT3)  // <NO TEXT>
+		SetPlayerSound(LastSummonerOf,0,SPELL_DISRUPTED)  // <NO TEXT>
+		SetPlayerSound(LastSummonerOf,0,SET_A_TRAP)  // <NO TEXT>
+		SetPlayerSound(LastSummonerOf,0,EXISTANCE4)  // <NO TEXT>
+		SetPlayerSound(LastSummonerOf,0,CRITICAL_HIT)  // <NO TEXT>
+		SetPlayerSound(LastSummonerOf,0,CRITICAL_MISS)  // <NO TEXT>
+		SetPlayerSound(LastSummonerOf,0,DAMAGE)  // <NO TEXT>
+		SetPlayerSound(LastSummonerOf,0,HURT)  // <NO TEXT>
+		SetPlayerSound(LastSummonerOf,0,DYING)  // <NO TEXT>
+		
+		Continue()
+END
+	
+IF
+	Global("DOING-IT","LOCALS",1)
+	OR(4)
+	TriggerOverride(LastSummonerOf,Global("ANIHUMAN","LOCALS",1))
+	TriggerOverride(LastSummonerOf,Global("ANISMALL","LOCALS",1))
+	TriggerOverride(LastSummonerOf,Global("ANIBIG","LOCALS",1))
+	TriggerOverride(LastSummonerOf,Global("ANIOTHER","LOCALS",1))
+THEN
+	RESPONSE #2
+		SetInterrupt(FALSE)
+		ReallyForceSpellRES("ANIGHO_#",LastSummonerOf) 
+		SmallWait(27)
+		ReallyForceSpellRES("ANIMAV_#",LastSummonerOf)  // No such index
+		
+		ChangeGeneral(LastSummonerOf,UNDEAD)
+		DestroySelf()
+	RESPONSE #3
+	SetInterrupt(FALSE)		
+		ReallyForceSpellRES("ANIGHO_#",LastSummonerOf) 
+		SmallWait(12)
+		ReallyForceSpellRES("ANIMAV_#",LastSummonerOf)  // No such index
+		ChangeGeneral(LastSummonerOf,UNDEAD)
+		DestroySelf()
+END
+
+
+	IF
+	
+	Global("DOING-IT","LOCALS",1)
+	OR(11)
+	Race(LastSummonerOf,HUMAN)
+		Race(LastSummonerOf,HALF_ELF)
+			Race(LastSummonerOf,HALFORC)
+				Race(LastSummonerOf,DWARF)
+					Race(LastSummonerOf,SAHUAGIN)
+						Race(LastSummonerOf,DUERGAR)
+							Race(LastSummonerOf,ELF)
+							Race(LastSummonerOf,HOBGOBLIN)
+								Race(LastSummonerOf,KUO-TOA)
+								Race(LastSummonerOf,RAKSHASA)
+								Race(LastSummonerOf,GENIE)								
+								!TriggerOverride(LastSummonerOf,Global("CHILD","LOCALS",1))
+								!Gender(LastSummonerOf,FEMALE)
+								
+	
+THEN
+	RESPONSE #1
+		SetGlobal("DOING-IT","LOCALS",2)
+		ActionOverride(LastSummonerOf,SetGlobal("ANIHUMAN","LOCALS",1))
+		SetPlayerSound(LastSummonerOf,@1,BATTLE_CRY1)
+		SetPlayerSound(LastSummonerOf,@2,SELECT_COMMON1)  
+		SetPlayerSound(LastSummonerOf,@3,SELECT_COMMON2)  
+		SetPlayerSound(LastSummonerOf,@4,DAMAGE)
+SetPlayerSound(LastSummonerOf,@3,PICKED_POCKET)
+		SetPlayerSound(LastSummonerOf,@5,DYING)  
+		
+				
+END
+
+IF
+	
+	Global("DOING-IT","LOCALS",1)
+	OR(10)
+	Race(LastSummonerOf,GNOME)
+		Race(LastSummonerOf,KOBOLD)
+			Race(LastSummonerOf,GOBLIN)
+				Race(LastSummonerOf,IMP)
+					Race(LastSummonerOf,MEPHIT)
+					Race(LastSummonerOf,GIBBERLING)
+						Race(LastSummonerOf,HALFLING)
+						Race(LastSummonerOf,FAIRY)
+						TriggerOverride(LastSummonerOf,Global("CHILD","LOCALS",1))
+						Gender(LastSummonerOf,FEMALE)	
+!Race(LastSummonerOf,DRAGON)						
+	
+THEN
+	RESPONSE #1
+		SetGlobal("DOING-IT","LOCALS",2)
+		ActionOverride(LastSummonerOf,SetGlobal("ANISMALL","LOCALS",1))
+		SetPlayerSound(LastSummonerOf,@6,BATTLE_CRY1)
+		SetPlayerSound(LastSummonerOf,@7,SELECT_COMMON1)  
+		SetPlayerSound(LastSummonerOf,@8,SELECT_COMMON2)  
+		SetPlayerSound(LastSummonerOf,@9,DAMAGE)
+SetPlayerSound(LastSummonerOf,@8,PICKED_POCKET)
+		SetPlayerSound(LastSummonerOf,@10,DYING)		
+				
+END
+
+
+IF
+	Global("DOING-IT","LOCALS",1)
+	OR(8)
+	Race(LastSummonerOf,UMBERHULK)
+		Race(LastSummonerOf,TROLL)
+			Race(LastSummonerOf,YETI)
+				Race(LastSummonerOf,OGRE)
+					Race(LastSummonerOf,GIANT)
+						Race(LastSummonerOf,BUGBEAR)
+						Race(LastSummonerOf,MINOTAUR)
+						Race(LastSummonerOf,MYCONID)
+					
+	
+THEN
+	RESPONSE #1
+		SetGlobal("DOING-IT","LOCALS",2)
+		ActionOverride(LastSummonerOf,SetGlobal("ANIBIG","LOCALS",1))
+		SetPlayerSound(LastSummonerOf,@11,BATTLE_CRY1)
+		SetPlayerSound(LastSummonerOf,@12,SELECT_COMMON1)  
+		SetPlayerSound(LastSummonerOf,@13,SELECT_COMMON2)  
+		SetPlayerSound(LastSummonerOf,@14,DAMAGE)
+SetPlayerSound(LastSummonerOf,@13,PICKED_POCKET)
+		SetPlayerSound(LastSummonerOf,@15,DYING)  
+		
+				
+END
+
+
+IF
+
+Global("DOING-IT","LOCALS",1)
+	OR(4)
+	Race(LastSummonerOf,ANKHEG)
+	Race(LastSummonerOf,BEETLE)
+	Race(LastSummonerOf,SPIDER)
+	Race(LastSummonerOf,DRIDER)
+	
+	
+THEN
+						
+						RESPONSE #1
+						SetGlobal("DOING-IT","LOCALS",2)
+						ActionOverride(LastSummonerOf,SetGlobal("ANIOTHER","LOCALS",1))
+						SetPlayerSound(LastSummonerOf,@21,BATTLE_CRY1)
+		SetPlayerSound(LastSummonerOf,@22,SELECT_COMMON1)  
+		SetPlayerSound(LastSummonerOf,@23,SELECT_COMMON2)  
+		SetPlayerSound(LastSummonerOf,@23,PICKED_POCKET)	
+		SetPlayerSound(LastSummonerOf,@24,DAMAGE)
+SetPlayerSound(LastSummonerOf,@25,DYING)  		
+		
+				
+END
+
+IF
+Global("DOING-IT","LOCALS",1)	
+		
+		Race(LastSummonerOf,SLIME)
+			
+THEN
+						
+						RESPONSE #1
+						
+						SetGlobal("DOING-IT","LOCALS",2)
+						ActionOverride(LastSummonerOf,SetGlobal("ANIOTHER","LOCALS",1))
+						SetPlayerSound(LastSummonerOf,@26,BATTLE_CRY1)
+		SetPlayerSound(LastSummonerOf,@27,SELECT_COMMON1)  
+		SetPlayerSound(LastSummonerOf,@28,SELECT_COMMON2)  
+		SetPlayerSound(LastSummonerOf,@28,PICKED_POCKET)	
+		SetPlayerSound(LastSummonerOf,@29,DAMAGE)  
+		SetPlayerSound(LastSummonerOf,@30,DYING)  
+		
+				
+END
+
+
+IF
+	Global("DOING-IT","LOCALS",1)
+	OR(2)
+			!Race(LastSummonerOf,RABBIT)
+			!TriggerOverride(LastSummonerOf,Global("USELESS","LOCALS",1))
+			TriggerOverride(LastSummonerOf,Global("ANIHUMAN","LOCALS",0))
+	TriggerOverride(LastSummonerOf,Global("ANISMALL","LOCALS",0))
+	TriggerOverride(LastSummonerOf,Global("ANIBIG","LOCALS",0))
+	TriggerOverride(LastSummonerOf,Global("ANIOTHER","LOCALS",0))				
+						
+						THEN
+						
+						RESPONSE #1
+						
+		SetGlobal("DOING-IT","LOCALS",2)	
+		ActionOverride(LastSummonerOf,SetGlobal("ANIOTHER","LOCALS",1))
+						SetPlayerSound(LastSummonerOf,@16,BATTLE_CRY1)
+		SetPlayerSound(LastSummonerOf,@17,SELECT_COMMON1)  
+		SetPlayerSound(LastSummonerOf,@18,SELECT_COMMON2)  
+		SetPlayerSound(LastSummonerOf,@19,DAMAGE)
+SetPlayerSound(LastSummonerOf,@17,PICKED_POCKET)
+		SetPlayerSound(LastSummonerOf,@20,DYING)  
+		
+				
+END
+
+
+IF
+
+	Global("DOING-IT","LOCALS",1)
+
+THEN
+
+RESPONSE #1
+
+SetGlobal("DOING-IT","LOCALS",2)
+ActionOverride(LastSummonerOf,SetGlobal("ANIOTHER","LOCALS",1))
+
+END
+
+IF
+	Global("DOING-IT","LOCALS",2)
+	OR(2)
+	TriggerOverride(LastSummonerOf,Global("ANIHUMAN","LOCALS",1))
+	TriggerOverride(LastSummonerOf,Global("ANISMALL","LOCALS",1))
+THEN
+	RESPONSE #2
+		SetInterrupt(FALSE)
+		ChangeStat(LastSummonerOf,LEVEL,2,SET)
+		ChangeStat(LastSummonerOf,LEVEL,1,SET)
+		ChangeStat(LastSummonerOf,LEVEL3,1,SET)
+		ChangeStat(LastSummonerOf,XPVALUE,0,SET)
+		
+		ActionOverride(LastSummonerOf,SetDialog(""))
+		SmallWait(12)
+		ReallyForceSpellRES("ANIMAV_#",LastSummonerOf)  // No such index
+		ActionOverride(LastSummonerOf,SetName(@47))
+		ChangeGeneral(LastSummonerOf,HUMANOID)
+		DestroySelf()
+	RESPONSE #3
+	SetInterrupt(FALSE)
+		ChangeStat(LastSummonerOf,LEVEL,2,SET)
+		ChangeStat(LastSummonerOf,LEVEL2,1,SET)
+		ChangeStat(LastSummonerOf,LEVEL3,1,SET)
+		ChangeStat(LastSummonerOf,XPVALUE,0,SET)
+		ActionOverride(LastSummonerOf,SetDialog(""))
+		ReallyForceSpellRES("ANIMAV_#",LastSummonerOf)  // No such index
+		ActionOverride(LastSummonerOf,SetName(@47))
+		ChangeGeneral(LastSummonerOf,HUMANOID)
+		DestroySelf()
+END
+
+IF
+	Global("DOING-IT","LOCALS",2)
+	TriggerOverride(LastSummonerOf,Global("ANIBIG","LOCALS",1))
+THEN
+	RESPONSE #2
+		SetInterrupt(FALSE)
+		ChangeStat(LastSummonerOf,LEVEL,2,SET)
+		ChangeStat(LastSummonerOf,LEVEL,1,SET)
+		ChangeStat(LastSummonerOf,LEVEL3,1,SET)
+		ChangeStat(LastSummonerOf,XPVALUE,0,SET)
+		ActionOverride(LastSummonerOf,SetDialog(""))
+		SmallWait(12)
+		
+		ReallyForceSpellRES("ANIMAV_#",LastSummonerOf)  // No such index
+		ActionOverride(LastSummonerOf,SetName(@47))
+		ChangeGeneral(LastSummonerOf,GIANTHUMANOID)
+		DestroySelf()
+	RESPONSE #3
+	SetInterrupt(FALSE)
+		ChangeStat(LastSummonerOf,LEVEL,2,SET)
+		ChangeStat(LastSummonerOf,LEVEL2,1,SET)
+		ChangeStat(LastSummonerOf,LEVEL3,1,SET)
+		ChangeStat(LastSummonerOf,XPVALUE,0,SET)
+		ActionOverride(LastSummonerOf,SetDialog(""))
+		ReallyForceSpellRES("ANIMAV_#",LastSummonerOf)  // No such index
+		ActionOverride(LastSummonerOf,SetName(@47))
+		ChangeGeneral(LastSummonerOf,GIANTHUMANOID)
+		DestroySelf()
+END
+
+IF
+	Global("DOING-IT","LOCALS",2)
+	TriggerOverride(LastSummonerOf,Global("ANIOTHER","LOCALS",1))
+THEN
+	RESPONSE #2
+		SetInterrupt(FALSE)
+		ChangeStat(LastSummonerOf,LEVEL,2,SET)
+		ChangeStat(LastSummonerOf,LEVEL,1,SET)
+		ChangeStat(LastSummonerOf,LEVEL3,1,SET)
+		ChangeStat(LastSummonerOf,XPVALUE,0,SET)
+		ActionOverride(LastSummonerOf,SetDialog(""))
+		SmallWait(12)
+		ReallyForceSpellRES("ANIMAV_#",LastSummonerOf)  // No such index
+		ActionOverride(LastSummonerOf,SetName(@47))
+		ChangeGeneral(LastSummonerOf,UNDEAD)
+		DestroySelf()
+	RESPONSE #3
+	SetInterrupt(FALSE)
+		ChangeStat(LastSummonerOf,LEVEL,2,SET)
+		ChangeStat(LastSummonerOf,LEVEL2,1,SET)
+		ChangeStat(LastSummonerOf,LEVEL3,1,SET)
+		ChangeStat(LastSummonerOf,XPVALUE,0,SET)
+		ActionOverride(LastSummonerOf,SetDialog(""))
+		ReallyForceSpellRES("ANIMAV_#",LastSummonerOf)  // No such index
+		ActionOverride(LastSummonerOf,SetName(@47))
+		ChangeGeneral(LastSummonerOf,UNDEAD)
+		DestroySelf()
+END

@@ -1,0 +1,128 @@
+@1 = ~[HUMANOID ZOMBIE BATTLECRY]~ [BATHUM_#]
+
+@2 = ~[HUMANOID ZOMBIE SELECT 1]~ [SEHUM1_#]
+
+@3 = ~[HUMANOID ZOMBIE SELECT 2]~ [SEHUM2_#]
+
+@4 = ~[HUMANOID ZOMBIE DAMAGE]~ [DAMHUM_#]
+
+@5 = ~[HUMANOID ZOMBIE DYING]~ [DEAHUM_#]
+
+@6 = ~[SMALL ZOMBIE BATTLECRY]~ [BATSMA_#]
+
+@7 = ~[SMALL ZOMBIE SELECT 1]~ [SESMA1_#]
+
+@8 = ~[SMALL ZOMBIE SELECT 2]~ [SESMA2_#]
+
+@9 = ~[SMALL ZOMBIE DAMAGE]~ [DAMSMA_#]
+
+@10 = ~[SMALL ZOMBIE DYING]~ [DEASMA_#]
+
+@11 = ~[GIANT ZOMBIE BATTLECRY]~ [BATGIA_#]
+
+@12 = ~[GIANT ZOMBIE SELECT 1]~ [SEGIA1_#]
+
+@13 = ~[GIANT ZOMBIE SELECT 2]~ [SEGIA2_#]
+
+@14 = ~[GIANT ZOMBIE DAMAGE]~ [DAMGIA_#]
+
+@15 = ~[GIANT ZOMBIE DYING]~ [DEAGIA_#]
+
+@16 = ~[MISC ZOMBIE BATTLECRY]~ [BATMIS_#]
+
+@17 = ~[MISC ZOMBIE SELECT 1]~ [SEMIS1_#]
+
+@18 = ~[MISC ZOMBIE SELECT 2]~ [SEMIS2_#]
+
+@19 = ~[MISC ZOMBIE DAMAGE]~ [DAMMIS_#]
+
+@20 = ~[MISC ZOMBIE DYING]~ [DEAMIS_#]
+
+@21 = ~[BUG ZOMBIE BATTLECRY]~ [BATSPI_#]
+
+@22 = ~[BUG ZOMBIE SELECT 1]~ [SESPI1_#]
+
+@23 = ~[BUG ZOMBIE SELECT 2]~ [SESPI2_#]
+
+@24 = ~[BUG ZOMBIE DAMAGE]~ [DAMSPI_#]
+
+@25 = ~[BUG ZOMBIE DYING]~ [DEASPI_#]
+
+@26 = ~[SLIME ZOMBIE BATTLECRY]~ [BATSLI_#]
+
+@27 = ~[SLIME ZOMBIE SELECT 1]~ [SESLI1_#]
+
+@28 = ~[SLIME ZOMBIE SELECT 2]~ [SESLI2_#]
+
+@29 = ~[SLIME ZOMBIE DAMAGE]~ [DAMSLI_#]
+
+@30 = ~[SLIME ZOMBIE DYING]~ [DEASLI_#]
+
+@31 = ~Zombie~
+
+@32 = ~The dead murmur...~
+
+@34 = ~[GHOUL/GHAST SPECIAL]Oooh! Nyam-nyam!~ [ANIGHU_#]
+
+@35 = ~Learned a great secret!~
+
+@36 = ~Blue Pox~ [DISEAS_#]
+
+@37 = ~Bound a spirit.~
+
+@38 = ~Not under this accursed light!~
+
+@39 = ~The zombie's long-exploited tissues finally rip across, and it falls to pieces.~
+
+@40 = ~Looks like we hit gold.~
+
+@41 = ~I feel a tug...~
+
+@42 = ~I lost the call.~
+
+@43 = ~Here is something.~
+
+@44 = ~Skeletons in a closet here, at most...~
+
+@45 = ~[TAR_SCREAMS]~ [TAR_#]
+
+@46 = ~Not living flesh~
+
+@47 = ~Freed One~
+
+@48 = ~[STOREOWNER 1] Welcome to my humble establishment.~ [STORE01]
+
+@49 = ~[MERCHANTS 2] All my stuff is authentic. Really, it is.~ [MERCH02]
+
+@50 = ~[EMERSON 3]~ [EMERS03]
+
+@51 = ~[EMERSON 4]~ [EMERS04]
+
+@52 = ~Your donation was greatly appreciated, and your reputation has gone up by one point.~ [REPUP]
+
+@53 = ~While your donation was considerable, it was not enough to gain a reputation point.~
+
+@54 = ~[DEATH_WAIL]~ [EXHCRE_#]
+
+@55 = ~Rumors of your habit of giving corpses an unholy life have trickled to the world's ears.~
+
+@56 = ~A new necromancer threatens the land, people say in alarm.~
+
+@57 = ~As soon as you lift the strange net from the coffin, irate moaning resounds from the entryway.~
+
+@58 = ~^0x7aBBD3D2I am fine! Thank the gods! And you, stranger! <GABBER>, is it?~
+
+@59 = ~^0x7aBBD3D2Much obliged!~
+
+@60 = ~^0x7aBBD3D2Late for the power meeting!~
+
+@61 = ~^0x7aBBD3D2I have arms, and legs, and... everything else! Hurray!~
+
+@62 = ~^0x7aBBD3D2I'm going to write a book about this. "There and Back Again, by One <GABBER>."~
+
+@63 = ~^0x7aBBD3D2Hmpf.~
+
+@64 = ~^0x7aBBD3D2Sucker.~
+
+@65 = ~^0x7aBBD3D2Oh, charity! Thank you SO much!~
+

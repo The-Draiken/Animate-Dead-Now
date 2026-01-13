@@ -1,0 +1,81 @@
+IF
+
+OR(17)
+AreaCheck("AR1008")
+AreaCheck("AR1009")
+AreaCheck("AR1010")
+AreaCheck("AR2000")
+AreaCheck("AR2001")
+AreaCheck("AR2002")
+AreaCheck("AR2003")
+AreaCheck("AR2004")
+AreaCheck("AR2005")
+AreaCheck("AR2006")
+AreaCheck("AR2007")
+AreaCheck("AR2008")
+AreaCheck("AR2009")
+AreaCheck("AR2010")
+AreaCheck("AR2011")
+AreaCheck("AR2012")
+ReputationLT(Player1,3)
+
+THEN
+
+RESPONSE #1
+
+DestroySelf()
+
+END
+
+
+IF
+	OnCreation()
+	!ActuallyInCombat()
+	ReputationGT(Player1,8)
+THEN
+	RESPONSE #1
+		DisplayStringNoName(Player1,@55)  // According to one of the merchants we met, the Seven Suns has been infiltrated by some sort of shapeshifter. I don't know what kind of monsters they are, but the merchants are fearful.
+		ReputationInc(-1)
+		DestroySelf()
+END
+
+IF
+	OnCreation()
+	!ActuallyInCombat()
+	ReputationLT(Player1,9)
+THEN
+	RESPONSE #1
+		DisplayStringNoName(Player1,@56)  // According to one of the merchants we met, the Seven Suns has been infiltrated by some sort of shapeshifter. I don't know what kind of monsters they are, but the merchants are fearful.
+		ReputationInc(-1)
+		DestroySelf()
+END
+
+IF
+	OnCreation()
+	ActuallyInCombat()
+THEN
+	RESPONSE #1
+		JumpToPoint([5.5])
+END
+
+IF
+	!ActuallyInCombat()
+	ReputationGT(Player1,8)
+
+THEN
+	RESPONSE #1
+		DisplayStringNoName(Player1,@55)  // According to one of the merchants we met, the Seven Suns has been infiltrated by some sort of shapeshifter. I don't know what kind of monsters they are, but the merchants are fearful.
+		ReputationInc(-1)
+		DestroySelf()
+END
+
+IF
+	!ActuallyInCombat()
+	ReputationLT(Player1,9)
+
+THEN
+	RESPONSE #1
+		DisplayStringNoName(Player1,@56)  // According to one of the merchants we met, the Seven Suns has been infiltrated by some sort of shapeshifter. I don't know what kind of monsters they are, but the merchants are fearful.
+		ReputationInc(-1)
+		DestroySelf()
+END

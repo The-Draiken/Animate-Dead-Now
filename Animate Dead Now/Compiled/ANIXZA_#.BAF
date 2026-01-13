@@ -1,0 +1,24 @@
+IF
+	TimeGT(DAWN_START)
+	TimeLT(DUSK_START)
+	AreaType(OUTDOOR)
+THEN
+	RESPONSE #1
+	VerbalConstant("xzar",AREA_DAY)
+		DisplayString("xzar",@38)  // I can't do that under this accursed light!
+		DestroySelf()	
+		
+END
+
+IF
+	Global("READY","LOCALS",0)
+THEN
+	RESPONSE #1
+
+		SetGlobal("READY","LOCALS",1)
+        SetGlobal("XZARAISE","GLOBAL",1)
+		ActionOverride("xzar",ForceSpellRES("ANIXZ+_#",Myself))  // No such index
+		Wait(3)
+		StartMusic(1000,FORCE)
+		DestroySelf()
+END

@@ -1,0 +1,32 @@
+IF
+	Global("BONANZA","GLOBAL",2)
+THEN
+	RESPONSE #100
+		SG("BONANZA",0)
+		ApplySpellRES("ANIFA1_#",LastSummonerOf)  // <NO TEXT>
+		Wait(2)
+		FadeFromColor([40.40],0)
+		Wait(1)
+		SetCutSceneLite(FALSE)
+		SmallWait(5)
+		VerbalConstant([PC],HAPPY)
+		DisplayString([PC],@43)  // Refuse if ye wish.
+		
+		DestroySelf()
+END
+
+IF
+	Global("BONANZA","GLOBAL",1)
+THEN
+	RESPONSE #100
+		SG("BONANZA",0)
+		ApplySpellRES("ANIFA1_#",LastSummonerOf)  // <NO TEXT>
+		Wait(2)
+		FadeFromColor([40.40],0)
+		Wait(1)
+		SetCutSceneLite(FALSE)
+		SmallWait(5)
+		DisplayString([PC],@40)  // Refuse if ye wish.
+		
+		DestroySelf()
+END

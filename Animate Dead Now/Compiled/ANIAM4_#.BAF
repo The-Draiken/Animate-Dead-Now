@@ -1,0 +1,61 @@
+IF
+
+!AreaType(OUTDOOR)
+!AreaType(DUNGEON)
+
+THEN
+
+RESPONSE #1
+
+DisplayString(LastSummonerOf,@44)
+VerbalConstant(LastSummonerOf,UNHAPPY_ANNOYED)
+DestroySelf()
+
+END
+
+
+IF
+	Global("READY","LOCALS",0)
+THEN
+	RESPONSE #2
+		CreateCreatureObjectOffset("ANIAM4_#",Myself,[100.100])  // No such index
+		SetGlobal("READY","LOCALS",1)
+		RESPONSE #3
+		CreateCreatureObjectOffset("ANIAM4_#",Myself,[-100.100])
+		SetGlobal("READY","LOCALS",1)
+		RESPONSE #3
+		CreateCreatureObjectOffset("ANIAM4_#",Myself,[-100.-100])  // No such index
+		SetGlobal("READY","LOCALS",1)
+		RESPONSE #3
+		CreateCreatureObjectOffset("ANIAM4_#",Myself,[-20.100])  // No such index
+		SetGlobal("READY","LOCALS",1)
+		RESPONSE #3
+		CreateCreatureObjectOffset("ANIAM4_#",Myself,[100.30])  // No such index
+		SetGlobal("READY","LOCALS",1)
+		RESPONSE #3
+		CreateCreatureObjectOffset("ANIAM4_#",Myself,[-100.20])  // No such index
+		SetGlobal("READY","LOCALS",1)
+		RESPONSE #3
+		CreateCreatureObjectOffset("ANIAM4_#",Myself,[100.-20])  // No such index
+		SetGlobal("READY","LOCALS",1)
+END
+
+IF
+	Global("READY","LOCALS",1)
+THEN
+	RESPONSE #2
+		
+		ReallyForceSpellRES("ANIKIK_#","liver2")  // No such index
+		GlobalShout(7689)
+		DisplayString(LastSummonerOf,@41)
+		SetGlobal("READY","LOCALS",2)
+END
+
+IF
+	Global("READY","LOCALS",2)
+	!InMyArea("liver2")
+THEN
+	RESPONSE #2
+	DestroySelf()
+	
+	END

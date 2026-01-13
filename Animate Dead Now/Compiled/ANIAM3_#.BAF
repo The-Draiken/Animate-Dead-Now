@@ -1,0 +1,409 @@
+IF
+	Global("LIVER","LOCALS",0)
+	Heard([ANYONE],7689)
+THEN
+	RESPONSE #1
+		
+		SetGlobalTimer("CORPSES","LOCALS",THREE_TURNS)
+		SetGlobal("LIVER","LOCALS",1)
+		ApplySpellRES("ANIDEF_#",Myself)
+		ActionOverride(LastSummonerOf(LastHeardBy),FaceObject("liver2"))
+		SmallWait(1)
+		ActionOverride(LastSummonerOf(LastHeardBy),FaceObject("liver2"))
+		SmallWait(1)
+		ActionOverride(LastSummonerOf(LastHeardBy),FaceObject("liver2"))
+		SmallWait(1)
+		ActionOverride(LastSummonerOf(LastHeardBy),FaceObject("liver2"))
+		SmallWait(1)
+		ActionOverride(LastSummonerOf(LastHeardBy),FaceObject("liver2"))
+		SmallWait(1)
+		ActionOverride(LastSummonerOf(LastHeardBy),FaceObject("liver2"))
+		SmallWait(1)
+		ActionOverride(LastSummonerOf(LastHeardBy),FaceObject("liver2"))
+		SmallWait(1)
+		ActionOverride(LastSummonerOf(LastHeardBy),FaceObject("liver2"))
+		
+		  // No such index
+		Wait(1)
+END
+
+IF
+	Global("LIVER","LOCALS",1)
+	Range(LastSummonerOf(LastHeardBy),8)
+THEN
+	RESPONSE #2
+		SetGlobal("LIVER","LOCALS",2)
+		CreateVisualEffectObject("ANIRA1_#",Myself)
+		SetCutSceneLite(TRUE)
+		ClearAllActions()
+		
+		RESPONSE #2
+		SetGlobal("LIVER","LOCALS",2)
+		CreateVisualEffectObject("ANIRA2_#",Myself)
+		SetCutSceneLite(TRUE)
+		ClearAllActions()
+		
+END
+
+IF
+	Global("LIVER","LOCALS",2)
+	Gender(LastSummonerOf(LastHeardBy),MALE)
+THEN
+	RESPONSE #3
+		SetGlobal("LIVER","LOCALS",3)		
+		ActionOverride(LastSummonerOf(LastHeardBy),SetSequence(SEQ_CONJURE))
+		PlaySound("SHOVM1_#")
+		SmallWait(25)
+		FadeToColor([70.70],0)
+		Wait(4)
+		SetGlobal("BONANZA","GLOBAL",1)
+		ChangeAnimation("ANIAM3_#")  // No such index
+	RESPONSE #3
+		SetGlobal("LIVER","LOCALS",3)
+		ActionOverride(LastSummonerOf(LastHeardBy),SetSequence(SEQ_CONJURE))
+		PlaySound("SHOVM1_#")
+		SmallWait(25)
+		FadeToColor([70.70],0)
+		Wait(3)
+		SetGlobal("BONANZA","GLOBAL",1)
+		ChangeAnimation("ANIAM3_#")  // No such index
+		
+		RESPONSE #1
+		SetGlobal("LIVER","LOCALS",3)		
+		ActionOverride(LastSummonerOf(LastHeardBy),SetSequence(SEQ_CONJURE))
+		PlaySound("SHOVM1_#")
+		SmallWait(25)
+		FadeToColor([70.70],0)
+		Wait(4)
+		CreateCreatureObjectOffset("ANIAM3_#",Myself,[100.100])
+		SetGlobal("BONANZA","GLOBAL",1)
+		ChangeAnimation("ANIAM3_#")  // No such index
+	RESPONSE #1
+		SetGlobal("LIVER","LOCALS",3)		
+		ActionOverride(LastSummonerOf(LastHeardBy),SetSequence(SEQ_CONJURE))
+		PlaySound("SHOVM1_#")
+		SmallWait(25)
+		FadeToColor([70.70],0)
+		Wait(3)
+		CreateCreatureObjectOffset("ANIAM3_#",Myself,[100.-100])
+		SetGlobal("BONANZA","GLOBAL",1)
+		ChangeAnimation("ANIAM3_#")  // No such index
+		
+		RESPONSE #1
+		SetGlobal("LIVER","LOCALS",3)		
+		ActionOverride(LastSummonerOf(LastHeardBy),SetSequence(SEQ_CONJURE))
+		PlaySound("SHOVM1_#")
+		SmallWait(25)
+		FadeToColor([70.70],0)
+		Wait(4)
+		CreateCreatureObjectOffset("ANIAM3_#",Myself,[80.-70])
+		SetGlobal("BONANZA","GLOBAL",1)
+		ChangeAnimation("ANIAM3_#")  // No such index
+	RESPONSE #1
+		SetGlobal("LIVER","LOCALS",3)		
+		ActionOverride(LastSummonerOf(LastHeardBy),SetSequence(SEQ_CONJURE))
+		PlaySound("SHOVM1_#")
+		SmallWait(25)
+		FadeToColor([70.70],0)
+		Wait(3)
+		CreateCreatureObjectOffset("ANIAM3_#",Myself,[-70.-70])
+		SetGlobal("BONANZA","GLOBAL",1)
+		ChangeAnimation("ANIAM3_#")  // No such index
+		
+		RESPONSE #1
+		SetGlobal("LIVER","LOCALS",3)		
+		ActionOverride(LastSummonerOf(LastHeardBy),SetSequence(SEQ_CONJURE))
+		PlaySound("SHOVM1_#")
+		SmallWait(25)
+		FadeToColor([70.70],0)
+		Wait(4)
+		CreateCreatureObjectOffset("ANIAM3_#",Myself,[80.-70])
+		CreateCreatureObjectOffset("ANIAM3_#",Myself,[-90.110])
+		SetGlobal("BONANZA","GLOBAL",2)
+		
+		ChangeAnimation("ANIAM3_#")  // No such index
+	RESPONSE #1
+		SetGlobal("LIVER","LOCALS",3)		
+		ActionOverride(LastSummonerOf(LastHeardBy),SetSequence(SEQ_CONJURE))
+		PlaySound("SHOVM1_#")
+		SmallWait(25)
+		FadeToColor([70.70],0)
+		Wait(3)
+		CreateCreatureObjectOffset("ANIAM3_#",Myself,[-70.-70])
+		CreateCreatureObjectOffset("ANIAM3_#",Myself,[90.-110])
+		SetGlobal("BONANZA","GLOBAL",2)
+		ChangeAnimation("ANIAM3_#")  // No such index
+
+	RESPONSE #3
+		SetGlobal("LIVER","LOCALS",3)		
+		ActionOverride(LastSummonerOf(LastHeardBy),SetSequence(SEQ_CONJURE))
+		PlaySound("SHOVM2_#")
+		SmallWait(25)
+		FadeToColor([70.70],0)
+		Wait(4)
+		SetGlobal("BONANZA","GLOBAL",1)
+		ChangeAnimation("ANIAM3_#")  // No such index
+	RESPONSE #3
+		SetGlobal("LIVER","LOCALS",3)
+		ActionOverride(LastSummonerOf(LastHeardBy),SetSequence(SEQ_CONJURE))
+		PlaySound("SHOVM2_#")
+		SmallWait(25)
+		FadeToColor([70.70],0)
+		Wait(3)
+		SetGlobal("BONANZA","GLOBAL",1)
+		ChangeAnimation("ANIAM3_#")  // No such index
+		
+		RESPONSE #1
+		SetGlobal("LIVER","LOCALS",3)		
+		ActionOverride(LastSummonerOf(LastHeardBy),SetSequence(SEQ_CONJURE))
+		PlaySound("SHOVM2_#")
+		SmallWait(25)
+		FadeToColor([70.70],0)
+		Wait(4)
+		CreateCreatureObjectOffset("ANIAM3_#",Myself,[100.100])
+		SetGlobal("BONANZA","GLOBAL",1)
+		ChangeAnimation("ANIAM3_#")  // No such index
+	RESPONSE #1
+		SetGlobal("LIVER","LOCALS",3)		
+		ActionOverride(LastSummonerOf(LastHeardBy),SetSequence(SEQ_CONJURE))
+		PlaySound("SHOVM2_#")
+		SmallWait(25)
+		FadeToColor([70.70],0)
+		Wait(3)
+		CreateCreatureObjectOffset("ANIAM3_#",Myself,[100.-100])
+		SetGlobal("BONANZA","GLOBAL",1)
+		ChangeAnimation("ANIAM3_#")  // No such index
+		
+		RESPONSE #1
+		SetGlobal("LIVER","LOCALS",3)		
+		ActionOverride(LastSummonerOf(LastHeardBy),SetSequence(SEQ_CONJURE))
+		PlaySound("SHOVM2_#")
+		SmallWait(25)
+		FadeToColor([70.70],0)
+		Wait(4)
+		CreateCreatureObjectOffset("ANIAM3_#",Myself,[80.-70])
+		SetGlobal("BONANZA","GLOBAL",1)
+		ChangeAnimation("ANIAM3_#")  // No such index
+	RESPONSE #1
+		SetGlobal("LIVER","LOCALS",3)		
+		ActionOverride(LastSummonerOf(LastHeardBy),SetSequence(SEQ_CONJURE))
+		PlaySound("SHOVM2_#")
+		SmallWait(25)
+		FadeToColor([70.70],0)
+		Wait(3)
+		CreateCreatureObjectOffset("ANIAM3_#",Myself,[-70.-70])
+		SetGlobal("BONANZA","GLOBAL",1)
+		ChangeAnimation("ANIAM3_#")  // No such index
+		
+		RESPONSE #1
+		SetGlobal("LIVER","LOCALS",3)		
+		ActionOverride(LastSummonerOf(LastHeardBy),SetSequence(SEQ_CONJURE))
+		PlaySound("SHOVM2_#")
+		SmallWait(25)
+		FadeToColor([70.70],0)
+		Wait(4)
+		CreateCreatureObjectOffset("ANIAM3_#",Myself,[80.-70])
+		CreateCreatureObjectOffset("ANIAM3_#",Myself,[-90.110])
+		SetGlobal("BONANZA","GLOBAL",2)
+		
+		ChangeAnimation("ANIAM3_#")  // No such index
+	RESPONSE #1
+		SetGlobal("LIVER","LOCALS",3)		
+		ActionOverride(LastSummonerOf(LastHeardBy),SetSequence(SEQ_CONJURE))
+		PlaySound("SHOVM2_#")
+		SmallWait(25)
+		FadeToColor([70.70],0)
+		Wait(3)
+		CreateCreatureObjectOffset("ANIAM3_#",Myself,[-70.-70])
+		CreateCreatureObjectOffset("ANIAM3_#",Myself,[90.-110])
+		SetGlobal("BONANZA","GLOBAL",2)
+		ChangeAnimation("ANIAM3_#")  // No such index
+END
+
+IF
+	Global("LIVER","LOCALS",2)
+	Gender(LastSummonerOf(LastHeardBy),FEMALE)
+THEN
+	RESPONSE #3
+		SetGlobal("LIVER","LOCALS",3)		
+		ActionOverride(LastSummonerOf(LastHeardBy),SetSequence(SEQ_CONJURE))
+		PlaySound("SHOVF1_#")
+		SmallWait(25)
+		FadeToColor([70.70],0)
+		Wait(4)
+		SetGlobal("BONANZA","GLOBAL",1)
+		ChangeAnimation("ANIAM3_#")  // No such index
+	RESPONSE #3
+		SetGlobal("LIVER","LOCALS",3)
+		ActionOverride(LastSummonerOf(LastHeardBy),SetSequence(SEQ_CONJURE))
+		PlaySound("SHOVF1_#")
+		SmallWait(25)
+		FadeToColor([70.70],0)
+		Wait(3)
+		SetGlobal("BONANZA","GLOBAL",1)
+		ChangeAnimation("ANIAM3_#")  // No such index
+		
+		RESPONSE #1
+		SetGlobal("LIVER","LOCALS",3)		
+		ActionOverride(LastSummonerOf(LastHeardBy),SetSequence(SEQ_CONJURE))
+		PlaySound("SHOVF1_#")
+		SmallWait(25)
+		FadeToColor([70.70],0)
+		Wait(4)
+		CreateCreatureObjectOffset("ANIAM3_#",Myself,[100.100])
+		SetGlobal("BONANZA","GLOBAL",1)
+		ChangeAnimation("ANIAM3_#")  // No such index
+	RESPONSE #1
+		SetGlobal("LIVER","LOCALS",3)		
+		ActionOverride(LastSummonerOf(LastHeardBy),SetSequence(SEQ_CONJURE))
+		PlaySound("SHOVF1_#")
+		SmallWait(25)
+		FadeToColor([70.70],0)
+		Wait(3)
+		CreateCreatureObjectOffset("ANIAM3_#",Myself,[100.-100])
+		SetGlobal("BONANZA","GLOBAL",1)
+		ChangeAnimation("ANIAM3_#")  // No such index
+		
+		RESPONSE #1
+		SetGlobal("LIVER","LOCALS",3)		
+		ActionOverride(LastSummonerOf(LastHeardBy),SetSequence(SEQ_CONJURE))
+		PlaySound("SHOVF1_#")
+		SmallWait(25)
+		FadeToColor([70.70],0)
+		Wait(4)
+		CreateCreatureObjectOffset("ANIAM3_#",Myself,[80.-70])
+		SetGlobal("BONANZA","GLOBAL",1)
+		ChangeAnimation("ANIAM3_#")  // No such index
+	RESPONSE #1
+		SetGlobal("LIVER","LOCALS",3)		
+		ActionOverride(LastSummonerOf(LastHeardBy),SetSequence(SEQ_CONJURE))
+		PlaySound("SHOVF1_#")
+		SmallWait(25)
+		FadeToColor([70.70],0)
+		Wait(3)
+		CreateCreatureObjectOffset("ANIAM3_#",Myself,[-70.-70])
+		SetGlobal("BONANZA","GLOBAL",1)
+		ChangeAnimation("ANIAM3_#")  // No such index
+		
+		RESPONSE #1
+		SetGlobal("LIVER","LOCALS",3)		
+		ActionOverride(LastSummonerOf(LastHeardBy),SetSequence(SEQ_CONJURE))
+		PlaySound("SHOVF1_#")
+		SmallWait(25)
+		FadeToColor([70.70],0)
+		Wait(4)
+		CreateCreatureObjectOffset("ANIAM3_#",Myself,[80.-70])
+		CreateCreatureObjectOffset("ANIAM3_#",Myself,[-90.110])
+		SetGlobal("BONANZA","GLOBAL",2)
+		
+		ChangeAnimation("ANIAM3_#")  // No such index
+	RESPONSE #1
+		SetGlobal("LIVER","LOCALS",3)		
+		ActionOverride(LastSummonerOf(LastHeardBy),SetSequence(SEQ_CONJURE))
+		PlaySound("SHOVF1_#")
+		SmallWait(25)
+		FadeToColor([70.70],0)
+		Wait(3)
+		CreateCreatureObjectOffset("ANIAM3_#",Myself,[-70.-70])
+		CreateCreatureObjectOffset("ANIAM3_#",Myself,[90.-110])
+		SetGlobal("BONANZA","GLOBAL",2)
+		ChangeAnimation("ANIAM3_#")  // No such index
+
+	RESPONSE #3
+		SetGlobal("LIVER","LOCALS",3)		
+		ActionOverride(LastSummonerOf(LastHeardBy),SetSequence(SEQ_CONJURE))
+		PlaySound("SHOVF2_#")
+		SmallWait(25)
+		FadeToColor([70.70],0)
+		Wait(4)
+		SetGlobal("BONANZA","GLOBAL",1)
+		ChangeAnimation("ANIAM3_#")  // No such index
+	RESPONSE #3
+		SetGlobal("LIVER","LOCALS",3)
+		ActionOverride(LastSummonerOf(LastHeardBy),SetSequence(SEQ_CONJURE))
+		PlaySound("SHOVF2_#")
+		SmallWait(25)
+		FadeToColor([70.70],0)
+		Wait(3)
+		SetGlobal("BONANZA","GLOBAL",1)
+		ChangeAnimation("ANIAM3_#")  // No such index
+		
+		RESPONSE #1
+		SetGlobal("LIVER","LOCALS",3)		
+		ActionOverride(LastSummonerOf(LastHeardBy),SetSequence(SEQ_CONJURE))
+		PlaySound("SHOVF2_#")
+		SmallWait(25)
+		FadeToColor([70.70],0)
+		Wait(4)
+		CreateCreatureObjectOffset("ANIAM3_#",Myself,[100.100])
+		SetGlobal("BONANZA","GLOBAL",1)
+		ChangeAnimation("ANIAM3_#")  // No such index
+	RESPONSE #1
+		SetGlobal("LIVER","LOCALS",3)		
+		ActionOverride(LastSummonerOf(LastHeardBy),SetSequence(SEQ_CONJURE))
+		PlaySound("SHOVF2_#")
+		SmallWait(25)
+		FadeToColor([70.70],0)
+		Wait(3)
+		CreateCreatureObjectOffset("ANIAM3_#",Myself,[100.-100])
+		SetGlobal("BONANZA","GLOBAL",1)
+		ChangeAnimation("ANIAM3_#")  // No such index
+		
+		RESPONSE #1
+		SetGlobal("LIVER","LOCALS",3)		
+		ActionOverride(LastSummonerOf(LastHeardBy),SetSequence(SEQ_CONJURE))
+		PlaySound("SHOVF2_#")
+		SmallWait(25)
+		FadeToColor([70.70],0)
+		Wait(4)
+		CreateCreatureObjectOffset("ANIAM3_#",Myself,[80.-70])
+		SetGlobal("BONANZA","GLOBAL",1)
+		ChangeAnimation("ANIAM3_#")  // No such index
+	RESPONSE #1
+		SetGlobal("LIVER","LOCALS",3)		
+		ActionOverride(LastSummonerOf(LastHeardBy),SetSequence(SEQ_CONJURE))
+		PlaySound("SHOVF2_#")
+		SmallWait(25)
+		FadeToColor([70.70],0)
+		Wait(3)
+		CreateCreatureObjectOffset("ANIAM3_#",Myself,[-70.-70])
+		SetGlobal("BONANZA","GLOBAL",1)
+		ChangeAnimation("ANIAM3_#")  // No such index
+		
+		RESPONSE #1
+		SetGlobal("LIVER","LOCALS",3)		
+		ActionOverride(LastSummonerOf(LastHeardBy),SetSequence(SEQ_CONJURE))
+		PlaySound("SHOVF2_#")
+		SmallWait(25)
+		FadeToColor([70.70],0)
+		Wait(4)
+		CreateCreatureObjectOffset("ANIAM3_#",Myself,[80.-70])
+		CreateCreatureObjectOffset("ANIAM3_#",Myself,[-90.110])
+		SetGlobal("BONANZA","GLOBAL",2)
+		
+		ChangeAnimation("ANIAM3_#")  // No such index
+	RESPONSE #1
+		SetGlobal("LIVER","LOCALS",3)		
+		ActionOverride(LastSummonerOf(LastHeardBy),SetSequence(SEQ_CONJURE))
+		PlaySound("SHOVF2_#")
+		SmallWait(25)
+		FadeToColor([70.70],0)
+		Wait(3)
+		CreateCreatureObjectOffset("ANIAM3_#",Myself,[-70.-70])
+		CreateCreatureObjectOffset("ANIAM3_#",Myself,[90.-110])
+		SetGlobal("BONANZA","GLOBAL",2)
+		ChangeAnimation("ANIAM3_#")  // No such index
+END
+
+IF
+	Global("LIVER","LOCALS",1)
+	OR(4)
+	ObjectActionListEmpty(LastSummonerOf(LastHeardBy))
+	StateCheck(LastSummonerOf(LastHeardBy),CD_STATE_NOTVALID)
+	TriggerOverride(LastSummonerOf(LastHeardBy),ActuallyInCombat())
+	GlobalTimerExpired("CORPSES","LOCALS")
+THEN
+	RESPONSE #1
+		DisplayString(LastSummonerOf(LastHeardBy),@42)  // Must I explain everything?! Can your thick ogrish skull not see how obviously talented we are? You're a fool if you don't take us!
+		DestroySelf()
+END

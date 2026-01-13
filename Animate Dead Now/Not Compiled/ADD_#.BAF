@@ -1,0 +1,7 @@
+IF
+	Global("ADN","GLOBAL",0)
+THEN
+	RESPONSE #1
+	ApplySpellRES("ADN+++_#",Player1)	
+		SetGlobal("ADN","GLOBAL",1)
+END

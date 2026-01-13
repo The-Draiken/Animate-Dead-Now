@@ -1,0 +1,64 @@
+IF
+
+ReputationLT(Player1,3)
+
+THEN
+
+RESPONSE #1
+
+DestroySelf()
+
+END
+
+
+IF
+	OnCreation()
+	!ActuallyInCombat()
+	ReputationGT(Player1,8)
+THEN
+	RESPONSE #1
+		DisplayStringNoName(Player1,@55)  // According to one of the merchants we met, the Seven Suns has been infiltrated by some sort of shapeshifter. I don't know what kind of monsters they are, but the merchants are fearful.
+		ReputationInc(-1)
+		DestroySelf()
+END
+
+IF
+	OnCreation()
+	!ActuallyInCombat()
+	ReputationLT(Player1,9)
+THEN
+	RESPONSE #1
+		DisplayStringNoName(Player1,@56)  // According to one of the merchants we met, the Seven Suns has been infiltrated by some sort of shapeshifter. I don't know what kind of monsters they are, but the merchants are fearful.
+		ReputationInc(-1)
+		DestroySelf()
+END
+
+IF
+	OnCreation()
+	ActuallyInCombat()
+THEN
+	RESPONSE #1
+		JumpToPoint([5.5])
+END
+
+IF
+	!ActuallyInCombat()
+	ReputationGT(Player1,8)
+
+THEN
+	RESPONSE #1
+		DisplayStringNoName(Player1,@55)  // According to one of the merchants we met, the Seven Suns has been infiltrated by some sort of shapeshifter. I don't know what kind of monsters they are, but the merchants are fearful.
+		ReputationInc(-1)
+		DestroySelf()
+END
+
+IF
+	!ActuallyInCombat()
+	ReputationLT(Player1,9)
+
+THEN
+	RESPONSE #1
+		DisplayStringNoName(Player1,@56)  // According to one of the merchants we met, the Seven Suns has been infiltrated by some sort of shapeshifter. I don't know what kind of monsters they are, but the merchants are fearful.
+		ReputationInc(-1)
+		DestroySelf()
+END

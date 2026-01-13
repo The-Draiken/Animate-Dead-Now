@@ -1,0 +1,1802 @@
+//EnigmaJazz changes
+//Monks become immune to the new diseases, NPCs immune to new diseases, staff of curing and elixir of health cure the diseases. I have not touched the decay code but bodies hanging around is not an issue if NPCs are safe and there is they need to be available to resurrect so we don't want them to disappear too quickly
+//Gift of life now works now by using new spell state, which is added using a function from Subtledoctor, change of class temporarily is bugged as the game loses original class
+//Changed GiveItemCreate to CreateItem so the zombies get the ring and helm and not the player character
+//Corrected notstealable flag to unstealable
+
+
+BACKUP ~Animate Dead Now/backup~
+AUTHOR ~Chimeric/Temnix/Goida~
+AUTO_TRA ~Animate Dead Now/TRA/%s~
+LANGUAGE ~English~
+         ~English~
+         ~Animate Dead Now/TRA/Setup-Animate Dead Now.tra~
+
+
+
+// -----------------------------------------------------------------------------
+// Spells-only mini component (EET-safe): Gift of Life + Cremation
+// Adds entries to SPELL.IDS so they can be referenced from scripts.
+// Does NOT patch creatures / animations / global systems.
+// -----------------------------------------------------------------------------
+BEGIN ~Gift of Life + Cremation (spells only; add to SPELL.IDS)~
+GROUP ~Animate Dead Now~
+
+// Copy only the resources needed by the two spells
+COPY ~Animate Dead Now/Main/CREMAT_#.SPL~ ~override~
+COPY ~Animate Dead Now/Main/CREMA2_#.SPL~ ~override~
+COPY ~Animate Dead Now/Main/CREMA3_#.SPL~ ~override~
+COPY ~Animate Dead Now/Main/CREMA4_#.SPL~ ~override~
+COPY ~Animate Dead Now/Main/CREMAB_#.BAM~ ~override~
+COPY ~Animate Dead Now/Main/CREMAC_#.BAM~ ~override~
+COPY ~Animate Dead Now/Main/CREMAC_#.wav~ ~override~
+
+COPY ~Animate Dead Now/Main/GIFTOL_#.SPL~ ~override~
+COPY ~Animate Dead Now/Main/GIFTOL_#.ITM~ ~override~
+COPY ~Animate Dead Now/Main/GIFTO2_#.SPL~ ~override~
+COPY ~Animate Dead Now/Main/GIFTOF_#.SPL~ ~override~
+COPY ~Animate Dead Now/Main/GIFTOF_#.ITM~ ~override~
+COPY ~Animate Dead Now/Main/GIFTOF_#.BAM~ ~override~
+COPY ~Animate Dead Now/Main/GIFTOF_#.VVC~ ~override~
+COPY ~Animate Dead Now/Main/GIFTOF_#.wav~ ~override~
+COPY ~Animate Dead Now/Main/GIFTO1_#.BAM~ ~override~
+COPY ~Animate Dead Now/Main/GIFTO2_#.VVC~ ~override~
+COPY ~Animate Dead Now/Main/GIFTO1_#.VVC~ ~override~
+COPY ~Animate Dead Now/Main/GIFTOA_#.BAM~ ~override~
+COPY ~Animate Dead Now/Main/GIFTOB_#.BAM~ ~override~
+COPY ~Animate Dead Now/Main/GIFTOC_#.BAM~ ~override~
+
+// Set names/desc (kept identical to the original mod)
+COPY_EXISTING ~CREMAT_#.SPL~ ~override~
+  SAY NAME1 ~Cremation~
+  SAY UNIDENTIFIED_DESC ~Cremation
+(Abjuration)
+
+Level: 1
+Range: 0
+Duration: 5 rounds
+Casting Time: 4
+Area of Effect: The caster
+Saving Throw: None
+
+By giving dead bodies a fiery sending-off, the priest firmly directs their souls to the afterlife and clears away infectious miasma. After preparing for the rites, <PRO_HESHE> comes close to the corpses to burn them one by one. A little personal experience comes with the trouble and risk.~
+BUT_ONLY
+
+COPY_EXISTING ~GIFTOL_#.SPL~ ~override~
+  SAY NAME1 ~Gift of Life~
+  SAY UNIDENTIFIED_DESC ~Gift of Life
+(Necromancy)
+
+Level: 5
+Sphere: Necromantic
+Range: 13 ft.
+Duration: Permanent
+Casting Time: 9
+Area of Effect: Special
+Saving Throw: None
+
+This power is equivalent to Raise Dead, but works on creatures both inside and outside the party. Those that are outside cannot be addressed directly or chosen. Rather the priest opens a conduit through which the soul of one of them can return to the world of the living. The priest should stand near the body <PRO_HESHE> desires to raise, and within or two rounds the spirit will reenter it, if the creature can be raised. Golems and other constructs, undead and elementals cannot be. Only the dead who were not enemies of the party will respond to the character's call, and the magic will be disrupted of the priest moves before the spirit returns.
+
+Very rarely another soul notices the doorway, rushes for it, and two creatures struggle out of death shoulder to shoulder.~
+BUT_ONLY
+
+COPY_EXISTING ~GIFTOL_#.ITM~ ~override~
+  SAY NAME2 ~Gift of Life~
+  SAY IDENTIFIED_DESC ~Gift of Life
+(Necromancy)
+
+Level: 5
+Sphere: Necromantic
+Range: 13 ft.
+Duration: Permanent
+Casting Time: 9
+Area of Effect: Special
+Saving Throw: None
+
+This power is equivalent to Raise Dead, but works on creatures both inside and outside the party. Those that are outside cannot be addressed directly or chosen. Rather the priest opens a conduit through which the soul of one of them can return to the world of the living. The priest should stand near the body <PRO_HESHE> desires to raise, and within or two rounds the spirit will reenter it, if the creature can be raised. Golems and other constructs, undead and elementals cannot be. Only the dead who were not enemies of the party will respond to the character's call, and the magic will be disrupted of the priest moves before the spirit returns.
+
+Very rarely another soul notices the doorway, rushes for it, and two creatures struggle out of death shoulder to shoulder.~
+BUT_ONLY
+
+// Add to spellbook + SPELL.IDS
+// ADD_SPELL syntax: ADD_SPELL <spl file> <type> <level> <SPELL.IDS symbol>
+// type: 1=priest, 2=wizard
+ADD_SPELL ~override/CREMAT_#.SPL~ 1 1 CLERIC_CREMATION
+ADD_SPELL ~override/GIFTOL_#.SPL~ 1 5 CLERIC_GIFT_OF_LIFE
+
+BEGIN ~Animate Dead Now~
+
+APPEND ~splprot.2da~ ~pseudo_splstate_#%TAB%89%TAB%-1%TAB%7~ UNLESS ~pseudo_splstate_#~	//Add check for pseudo spellstates using later bytes of prof 89
+APPEND ~splprot.2da~ ~not_pseudo_splstate_#%TAB%89%TAB%-1%TAB%9~ UNLESS ~not_pseudo_splstate_#~	//Add check for not pseudo spellstates using later bytes of prof 89
+
+COPY_EXISTING ~splprot.2da~ ~override~
+  COUNT_2DA_COLS cols
+  READ_2DA_ENTRIES_NOW rows cols
+  FOR (row = 1; row < rows; ++row) BEGIN
+	READ_2DA_ENTRY_FORMER rows row 0 ~stat~
+	PATCH_IF (~%stat%~ STRING_EQUAL_CASE ~pseudo_splstate_#~) BEGIN
+	  SET is_pseudo_state = %row%
+	END
+	PATCH_IF (~%stat%~ STRING_EQUAL_CASE ~not_pseudo_splstate_#~) BEGIN
+	  SET not_pseudo_state = %row%
+	END
+  END
+BUT_ONLY
+
+
+
+EXTEND_TOP ~SHOUT.BCS~ ~Animate Dead Now/Not Compiled/FLAAMN_#.BAF~
+
+EXTEND_TOP ~BALDUR.BCS~ ~Animate Dead Now/Not Compiled/ADD_#.BAF~
+
+ACTION_IF FILE_EXISTS_IN_GAME ~BALDUR25.BCS~ THEN BEGIN
+
+EXTEND_TOP ~BALDUR25.BCS~ ~Animate Dead Now/Not Compiled/ADD_#.BAF~
+
+END
+
+ACTION_IF FILE_EXISTS_IN_GAME ~GHAST.BCS~ THEN BEGIN
+
+EXTEND_TOP ~GHAST.BCS~ ~Animate Dead Now/Not Compiled/GHAST_#.BAF~
+
+END
+
+ACTION_IF GAME_IS ~bgee eet~ THEN BEGIN
+
+EXTEND_TOP ~AJANTIS.BCS~ ~Animate Dead Now/Not Compiled/AJANTI_#.BAF~
+COMPILE ~Animate Dead Now/Not Compiled/AJANTJ_#.D~
+
+END
+
+ACTION_IF GAME_IS ~bgee~ THEN BEGIN
+
+COMPILE ~Animate Dead Now/Rep script/BGEE/ANIREP_#.BAF~
+
+END
+
+ACTION_IF GAME_IS ~bg2ee iwdee~ THEN BEGIN
+
+COMPILE ~Animate Dead Now/Rep script/BG2EE and IWDEE/ANIREP_#.BAF~
+
+END
+
+ACTION_IF GAME_IS ~eet~ THEN BEGIN
+
+COMPILE ~Animate Dead Now/Rep script/EET/ANIREP_#.BAF~
+
+END
+
+ACTION_IF !GAME_IS ~eet~ THEN BEGIN
+
+STRING_SET 10468 @52
+STRING_SET 10469 @53
+
+END ELSE BEGIN
+
+STRING_SET 210468 @52
+STRING_SET 210469 @53
+
+END
+
+COPY_EXISTING ~ITEMTYPE.2DA~ ~override~
+REPLACE_TEXTUALLY ~45         ABELA03    ABELA02    -1~ ~45         GAM_18A    GAM_18B    7~
+REPLACE_TEXTUALLY ~48         FAL_01B    GAM_21B    -1~ ~48         GAM_18A    GAM_18B    8~
+REPLACE_TEXTUALLY ~43         FAL_01B    GAM_21B    -1~ ~43         SMABOA_#   SMABOB_#    9~
+REPLACE_TEXTUALLY ~54         GAM_21A    GAM_21B    -1~ ~54         SMABOA_#   SMABOB_#    10~
+BUT_ONLY
+
+COMPILE ~Animate Dead Now/Compiled~
+
+COPY ~Animate Dead Now/Main~ ~override~
+
+COPY_EXISTING ~NEAPRI_#.SPL~ ~override~
+LPF ALTER_SPELL_EFFECT INT_VAR match_opcode = 72 new_opcode = 233 parameter1 = (1 << 8) parameter2 = (89 + (0x10000 * 1)) END
+
+COPY_EXISTING ~NEAWIZ_#.SPL~ ~override~
+LPF ALTER_SPELL_EFFECT INT_VAR match_opcode = 72 new_opcode = 233 parameter1 = (1 << 8) parameter2 = (89 + (0x10000 * 1)) END
+
+COPY_EXISTING ~ANIXZ2_#.SPL~ ~override~
+LPF ALTER_SPELL_EFFECT INT_VAR match_opcode = 72 new_opcode = 233 parameter1 = (3 << 8) parameter2 = (89 + (0x10000 * 1)) END
+
+COPY_EXISTING ~GIFTO2_#.SPL~ ~override~
+LPF ALTER_SPELL_EFFECT INT_VAR match_opcode = 72 new_opcode = 233 parameter1 = (2 << 8) parameter2 = (89 + (0x10000 * 1)) END
+
+COPY_EXISTING ~ZOMVAL_#.CRE~ ~override~	//Invisible creature						
+LPF ADD_CRE_EFFECT INT_VAR opcode = 233 timing = 9 target = 1 duration = 0 resist_dispel = 0 probability1 = 100 parameter1 = (4 << 8) parameter2 = 89 END 
+
+COPY_EXISTING ~CREMAT_#.SPL~ ~override~ //Cremate
+LPF ALTER_SPELL_EFFECT INT_VAR match_opcode =	72 new_opcode = 233 parameter1 = (5 << 8) parameter2 = (89 + (0x10000 * 1)) END
+
+COPY_EXISTING ~RABBIT_#.SPL~ ~override~ //RABBIT
+LPF ALTER_SPELL_EFFECT INT_VAR match_opcode =	72 new_opcode = 233 parameter1 = (6 << 8) parameter2 = (89 + (0x10000 * 1)) END
+
+
+
+//make the decompose spells decomp and decomw- need to extend the levels down to 1 and make them priest/ wizard spells lvl1 and remove anirep effect make decom0 based on aniaal but change to destroyself instead of raising, add to the animaz movement spell, make new projetile and visual effects with green colouration
+//need to sort out bams description and wizard scroll and adding to stores. Need to add to add spell as well and also add to the sphere system for me.
+//make the new permanent zombie curse, this will set to 6 << 8 and add the effect to  spell applied when dead to raise again if has that pseudospellstate, then make scroll and add desc and add to stores. adjust the raise effect appropriately
+
+COPY_EXISTING ~ANICCX_#.spl~ ~override~
+
+LPF ADD_SPELL_EFFECT INT_VAR opcode = 318 target = 2 parameter1 = (15 << 8) parameter2 = %is_pseudo_state% timing = 10 duration = 1 STR_VAR resource = ~ANICCX_#~	END 
+LPF ADD_SPELL_EFFECT INT_VAR opcode = 318 target = 2 parameter1 = (14 << 8) parameter2 = %is_pseudo_state% timing = 10 duration = 1 STR_VAR resource = ~ANICCX_#~	END 
+LPF ADD_SPELL_EFFECT INT_VAR opcode = 318 target = 2 parameter1 = (13 << 8) parameter2 = %is_pseudo_state% timing = 10 duration = 1 STR_VAR resource = ~ANICCX_#~	END 
+LPF ADD_SPELL_EFFECT INT_VAR opcode = 318 target = 2 parameter1 = (12 << 8) parameter2 = %is_pseudo_state% timing = 10 duration = 1 STR_VAR resource = ~ANICCX_#~	END 
+LPF ADD_SPELL_EFFECT INT_VAR opcode = 318 target = 2 parameter1 = (11 << 8) parameter2 = %is_pseudo_state% timing = 10 duration = 1 STR_VAR resource = ~ANICCX_#~	END 
+LPF ADD_SPELL_EFFECT INT_VAR opcode = 318 target = 2 parameter1 = (10 << 8) parameter2 = %is_pseudo_state% timing = 10 duration = 1 STR_VAR resource = ~ANICCX_#~	END 
+LPF ADD_SPELL_EFFECT INT_VAR opcode = 318 target = 2 parameter1 = (9 << 8) parameter2 = %is_pseudo_state% timing = 10 duration = 1 STR_VAR resource = ~ANICCX_#~	END 
+LPF ADD_SPELL_EFFECT INT_VAR opcode = 318 target = 2 parameter1 = (8 << 8) parameter2 = %is_pseudo_state% timing = 10 duration = 1 STR_VAR resource = ~ANICCX_#~	END 
+LPF ADD_SPELL_EFFECT INT_VAR opcode = 318 target = 2 parameter1 = (7 << 8) parameter2 = %is_pseudo_state% timing = 10 duration = 1 STR_VAR resource = ~ANICCX_#~	END 
+LPF ADD_SPELL_EFFECT INT_VAR opcode = 326 target = 2 parameter1 = (6 << 8) parameter2 = %is_pseudo_state% timing = 1 STR_VAR resource = ~ANIARA_#~ END
+LPF ADD_SPELL_EFFECT INT_VAR opcode = 318 target = 2 parameter1 = (6 << 8) parameter2 = %is_pseudo_state% timing = 10 duration = 1 STR_VAR resource = ~ANICCX_#~	END 
+LPF ADD_SPELL_EFFECT INT_VAR opcode = 326 target = 2 parameter1 = (5 << 8) parameter2 = %is_pseudo_state% timing = 1 STR_VAR resource = ~ANIALL_#~ END 
+LPF ADD_SPELL_EFFECT INT_VAR opcode = 318 target = 2 parameter1 = (5 << 8) parameter2 = %is_pseudo_state% timing = 10 duration = 1 STR_VAR resource = ~ANICCX_#~	END 
+LPF ADD_SPELL_EFFECT INT_VAR opcode = 326 target = 2 parameter1 = (4 << 8) parameter2 = %is_pseudo_state% timing = 1 STR_VAR resource = ~ANIARR_#~ END
+LPF ADD_SPELL_EFFECT INT_VAR opcode = 318 target = 2 parameter1 = (4 << 8) parameter2 = %is_pseudo_state% timing = 10 duration = 1 STR_VAR resource = ~ANICCX_#~	END 
+LPF ADD_SPELL_EFFECT INT_VAR opcode = 326 target = 2 parameter1 = (3 << 8) parameter2 = %is_pseudo_state% timing = 1 STR_VAR resource = ~ANIAAR_#~ END
+LPF ADD_SPELL_EFFECT INT_VAR opcode = 318 target = 2 parameter1 = (3 << 8) parameter2 = %is_pseudo_state% timing = 10 duration = 1 STR_VAR resource = ~ANICCX_#~	END 
+LPF ADD_SPELL_EFFECT INT_VAR opcode = 326 target = 2 parameter1 = (2 << 8) parameter2 = %is_pseudo_state% timing = 1 STR_VAR resource = ~ANIARL_#~ END
+LPF ADD_SPELL_EFFECT INT_VAR opcode = 318 target = 2 parameter1 = (2 << 8) parameter2 = %is_pseudo_state% timing = 10 duration = 1 STR_VAR resource = ~ANICCX_#~	END 
+LPF ADD_SPELL_EFFECT INT_VAR opcode = 326 target = 2 parameter1 = (1 << 8) parameter2 = %is_pseudo_state% timing = 1 STR_VAR resource = ~ANIAAL_#~	END
+
+COPY_EXISTING ~ANIVI0_#.spl~ ~override~
+
+LPF ADD_SPELL_EFFECT INT_VAR opcode = 318 target = 2 parameter1 = (1 << 28) parameter2 = %not_pseudo_state% timing = 0 duration = 6 insert_point = 0 STR_VAR resource = ~ANIVI0_#~	END
+LPF ADD_SPELL_EFFECT INT_VAR opcode = 318 target = 2 parameter1 = (2 << 28) parameter2 = %is_pseudo_state% timing = 0 duration = 6 insert_point = 0 STR_VAR resource = ~ANIVI0_#~	END
+LPF ADD_SPELL_EFFECT INT_VAR opcode = 318 target = 2 parameter1 = (4 << 28) parameter2 = %is_pseudo_state% timing = 0 duration = 6 insert_point = 0 STR_VAR resource = ~ANIVI0_#~	END
+LPF ADD_SPELL_EFFECT INT_VAR opcode = 318 target = 2 parameter1 = (8 << 28) parameter2 = %is_pseudo_state% timing = 0 duration = 6 insert_point = 0 STR_VAR resource = ~ANIVI0_#~	END
+
+COPY_EXISTING ~ANICR3_#.spl~ ~override~
+LPF ADD_SPELL_EFFECT INT_VAR opcode = 318 target = 2 parameter1 = (15 << 8) parameter2 = %is_pseudo_state% timing = 10 duration = 1 STR_VAR resource = ~ANICR3_#~	END 
+LPF ADD_SPELL_EFFECT INT_VAR opcode = 318 target = 2 parameter1 = (14 << 8) parameter2 = %is_pseudo_state% timing = 10 duration = 1 STR_VAR resource = ~ANICR3_#~	END 
+LPF ADD_SPELL_EFFECT INT_VAR opcode = 318 target = 2 parameter1 = (13 << 8) parameter2 = %is_pseudo_state% timing = 10 duration = 1 STR_VAR resource = ~ANICR3_#~	END 
+LPF ADD_SPELL_EFFECT INT_VAR opcode = 318 target = 2 parameter1 = (12 << 8) parameter2 = %is_pseudo_state% timing = 10 duration = 1 STR_VAR resource = ~ANICR3_#~	END 
+LPF ADD_SPELL_EFFECT INT_VAR opcode = 318 target = 2 parameter1 = (11 << 8) parameter2 = %is_pseudo_state% timing = 10 duration = 1 STR_VAR resource = ~ANICR3_#~	END 
+LPF ADD_SPELL_EFFECT INT_VAR opcode = 318 target = 2 parameter1 = (10 << 8) parameter2 = %is_pseudo_state% timing = 10 duration = 1 STR_VAR resource = ~ANICR3_#~	END 
+LPF ADD_SPELL_EFFECT INT_VAR opcode = 318 target = 2 parameter1 = (9 << 8) parameter2 = %is_pseudo_state% timing = 10 duration = 1 STR_VAR resource = ~ANICR3_#~	END 
+LPF ADD_SPELL_EFFECT INT_VAR opcode = 318 target = 2 parameter1 = (8 << 8) parameter2 = %is_pseudo_state% timing = 10 duration = 1 STR_VAR resource = ~ANICR3_#~	END 
+LPF ADD_SPELL_EFFECT INT_VAR opcode = 318 target = 2 parameter1 = (7 << 8) parameter2 = %is_pseudo_state% timing = 10 duration = 1 STR_VAR resource = ~ANICR3_#~	END 
+LPF ADD_SPELL_EFFECT INT_VAR opcode = 318 target = 2 parameter1 = (6 << 8) parameter2 = %is_pseudo_state% timing = 10 duration = 1 STR_VAR resource = ~ANICR3_#~	END 
+LPF ADD_SPELL_EFFECT INT_VAR opcode = 326 target = 2 parameter1 = (5 << 8) parameter2 = %is_pseudo_state% timing = 1 STR_VAR resource = ~ANICR4_#~ END 
+
+
+COPY_EXISTING ~ANIRA1_#.spl~ ~override~
+LPF ADD_SPELL_EFFECT INT_VAR opcode = 318 target = 2 parameter1 = (15 << 8) parameter2 = %is_pseudo_state% timing = 10 duration = 1 STR_VAR resource = ~ANIRA1_#~	END 
+LPF ADD_SPELL_EFFECT INT_VAR opcode = 318 target = 2 parameter1 = (14 << 8) parameter2 = %is_pseudo_state% timing = 10 duration = 1 STR_VAR resource = ~ANIRA1_#~	END 
+LPF ADD_SPELL_EFFECT INT_VAR opcode = 318 target = 2 parameter1 = (13 << 8) parameter2 = %is_pseudo_state% timing = 10 duration = 1 STR_VAR resource = ~ANIRA1_#~	END 
+LPF ADD_SPELL_EFFECT INT_VAR opcode = 318 target = 2 parameter1 = (12 << 8) parameter2 = %is_pseudo_state% timing = 10 duration = 1 STR_VAR resource = ~ANIRA1_#~	END 
+LPF ADD_SPELL_EFFECT INT_VAR opcode = 318 target = 2 parameter1 = (11 << 8) parameter2 = %is_pseudo_state% timing = 10 duration = 1 STR_VAR resource = ~ANIRA1_#~	END 
+LPF ADD_SPELL_EFFECT INT_VAR opcode = 318 target = 2 parameter1 = (10 << 8) parameter2 = %is_pseudo_state% timing = 10 duration = 1 STR_VAR resource = ~ANIRA1_#~	END 
+LPF ADD_SPELL_EFFECT INT_VAR opcode = 318 target = 2 parameter1 = (9 << 8) parameter2 = %is_pseudo_state% timing = 10 duration = 1 STR_VAR resource = ~ANIRA1_#~	END 
+LPF ADD_SPELL_EFFECT INT_VAR opcode = 318 target = 2 parameter1 = (8 << 8) parameter2 = %is_pseudo_state% timing = 10 duration = 1 STR_VAR resource = ~ANIRA1_#~	END 
+LPF ADD_SPELL_EFFECT INT_VAR opcode = 318 target = 2 parameter1 = (7 << 8) parameter2 = %is_pseudo_state% timing = 10 duration = 1 STR_VAR resource = ~ANIRA1_#~	END 
+LPF ADD_SPELL_EFFECT INT_VAR opcode = 326 target = 2 parameter1 = (6 << 8) parameter2 = %is_pseudo_state% timing = 1 STR_VAR resource = ~ANICR4_#~ END 
+
+COPY_EXISTING ~ANIMAP_#.bcs~ ~override~ //correct giving the ring and helm to zombies
+	DECOMPILE_AND_PATCH BEGIN
+		REPLACE_TEXTUALLY ~GiveItemCreate("RING94",Myself,0,0,0)~ ~CreateItem("RING94",0,0,0)~
+		REPLACE_TEXTUALLY ~GiveItemCreate("HELMNOAN",Myself,0,0,0)~ ~ CreateItem("HELMNOAN",0,0,0)~
+	END
+
+COPY_EXISTING ~ANIMAV_#.bcs~ ~override~ 
+	DECOMPILE_AND_PATCH BEGIN
+		REPLACE_TEXTUALLY ~GiveItemCreate("RING94",Myself,0,0,0)~ ~CreateItem("RING94",0,0,0)~
+		REPLACE_TEXTUALLY ~GiveItemCreate("HELMNOAN",Myself,0,0,0)~ ~ CreateItem("HELMNOAN",0,0,0)~
+	END	
+	
+	
+ 
+COPY_EXISTING_REGEXP GLOB ~.*\.2DA~ ~override~
+
+PATCH_IF ((~%SOURCE_RES%~ STRING_CONTAINS_REGEXP ~CLABPA~) == 0) & !(~%SOURCE_RES%~ STRING_EQUAL_CASE ~CLABPA06~) THEN BEGIN
+
+INNER_ACTION BEGIN
+
+APPEND ~%SOURCE_RES%.2DA~ ~ABILITY50   GA_CURDIS_#        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****
+~ UNLESS ~ABILITY50   GA_CURDIS_#~
+
+END
+END
+
+PATCH_IF ((~%SOURCE_RES%~ STRING_CONTAINS_REGEXP ~CLABPA~) == 0) THEN BEGIN
+
+INNER_ACTION BEGIN
+
+APPEND ~%SOURCE_RES%.2DA~ ~ABILITY51   AP_PERHEL_#      ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****
+~ UNLESS ~ABILITY51   AP_PERHEL_#~
+
+END
+END
+BUT_ONLY
+
+APPEND ~CLABPA06.2DA~ ~ABILITY50   GA_CAUDIS_#~ UNLESS ~ABILITY50   GA_CAUDIS_#~
+
+COPY_EXISTING_REGEXP GLOB ~.*\.ITM~ ~override~
+
+PATCH_IF (SOURCE_SIZE > 112) THEN BEGIN
+
+READ_SHORT 0x1C type
+READ_SHORT 0x68 abs
+READ_LONG 0x18 drop
+READ_STRREF 0xC name
+
+PATCH_IF abs > 0 THEN BEGIN
+
+LPF CLONE_EFFECT INT_VAR check_globals = 0 match_opcode = 12 match_parameter2 = 0x00080000 parameter2 = 0 opcode = 321 target = 2 timing = 1 probability1 = 50 dicesize = 0 dicenumber = 0 silent = 1 STR_VAR resource = ~RABIE2_#~ END
+LPF CLONE_EFFECT INT_VAR check_globals = 0 match_opcode = 12 match_parameter2 = 0x00080001 parameter2 = 0 opcode = 321 target = 2 timing = 1 probability1 = 50 dicesize = 0 dicenumber = 0 silent = 1 STR_VAR resource = ~RABIE2_#~ END
+LPF CLONE_EFFECT INT_VAR check_globals = 0 match_opcode = 12 match_parameter2 = 0x00080002 parameter2 = 0 opcode = 321 target = 2 timing = 1 probability1 = 50 dicesize = 0 dicenumber = 0 silent = 1 STR_VAR resource = ~RABIE2_#~ END
+LPF CLONE_EFFECT INT_VAR check_globals = 0 match_opcode = 12 match_parameter2 = 0x00080003 parameter2 = 0 opcode = 321 target = 2 timing = 1 probability1 = 50 dicesize = 0 dicenumber = 0 silent = 1 STR_VAR resource = ~RABIE2_#~ END
+LPF CLONE_EFFECT INT_VAR check_globals = 0 match_opcode = 12 match_parameter2 = 0x00010000 parameter2 = 0 opcode = 321 target = 2 timing = 1 probability1 = 50 dicesize = 0 dicenumber = 0 silent = 1 STR_VAR resource = ~RABIE2_#~ END
+LPF CLONE_EFFECT INT_VAR check_globals = 0 match_opcode = 12 match_parameter2 = 0x00010001 parameter2 = 0 opcode = 321 target = 2 timing = 1 probability1 = 50 dicesize = 0 dicenumber = 0 silent = 1 STR_VAR resource = ~RABIE2_#~ END
+LPF CLONE_EFFECT INT_VAR check_globals = 0 match_opcode = 12 match_parameter2 = 0x00010002 parameter2 = 0 opcode = 321 target = 2 timing = 1 probability1 = 50 dicesize = 0 dicenumber = 0 silent = 1 STR_VAR resource = ~RABIE2_#~ END
+LPF CLONE_EFFECT INT_VAR check_globals = 0 match_opcode = 12 match_parameter2 = 0x00010003 parameter2 = 0 opcode = 321 target = 2 timing = 1 probability1 = 50 dicesize = 0 dicenumber = 0 silent = 1 STR_VAR resource = ~RABIE2_#~ END
+
+END
+
+PATCH_IF (type = 5 | type = 14 | type = 24 | type = 31) & abs > 0 THEN BEGIN
+
+LPF ADD_ITEM_EFFECT INT_VAR type = 2 opcode = 326 target = 2 timing = 1 probability1 = 1 STR_VAR resource = ~WEPTET_#~ END
+
+END
+
+PATCH_IF (type = 16 | type = 17 | type = 19 | type = 20 | type = 21 | type = 22 | type = 23 | type = 25 | type = 26 | type = 29 | type = 30) & abs > 0 & ((~%SOURCE_RES%~ STRING_CONTAINS_REGEXP ~c#grtoo~) == 1) THEN BEGIN
+
+LPF ADD_ITEM_EFFECT INT_VAR type = 1 opcode = 326 target = 2 timing = 1 probability1 = 0 silent = 1 STR_VAR resource = ~WEPTET_#~ END
+LPF ADD_ITEM_EFFECT INT_VAR type = 2 opcode = 326 target = 2 timing = 1 probability1 = 1 silent = 1 STR_VAR resource = ~WEPTET_#~ END
+
+END
+
+
+PATCH_IF (type = 0 | type = 28) & ((~%drop%~ & BIT2) != BIT2) & ((~%SOURCE_RES%~ STRING_CONTAINS_REGEXP ~FIST~) == 1) & ((~%name%~ STRING_CONTAINS_REGEXP ~fist~) == 1) & ((~%SOURCE_RES%~ STRING_CONTAINS_REGEXP ~fire~) == 1) & ((~%SOURCE_RES%~ STRING_CONTAINS_REGEXP ~elear~) == 1) & ((~%SOURCE_RES%~ STRING_CONTAINS_REGEXP ~32~) == 1) & ((~%SOURCE_RES%~ STRING_CONTAINS_REGEXP ~\bB~) == 1) & abs > 0 THEN BEGIN
+
+LPF ADD_ITEM_EFFECT INT_VAR type = 1 opcode = 326 target = 2 timing = 1 probability1 = 0 silent = 1 STR_VAR resource = ~WEPTET_#~ END
+LPF ADD_ITEM_EFFECT INT_VAR type = 1 opcode = 318 target = 1 probability1 = 100 silent = 1 STR_VAR resource = ~RABIES_#~ END
+LPF ADD_ITEM_EFFECT INT_VAR type = 1 opcode = 326 target = 1 timing = 7 probability1 = 0 parameter2 = 7 silent = 1 STR_VAR resource = ~RABIES_#~ END
+LPF ADD_ITEM_EFFECT INT_VAR type = 1 opcode = 326 target = 1 timing = 7 probability1 = 0 parameter1 = 101 parameter2 = 104 silent = 1 STR_VAR resource = ~RABIES_#~ END
+LPF ADD_ITEM_EFFECT INT_VAR type = 1 opcode = 326 target = 1 timing = 7 probability1 = 0 parameter1 = 102 parameter2 = 104 silent = 1 STR_VAR resource = ~RABIES_#~ END
+LPF ADD_ITEM_EFFECT INT_VAR type = 1 opcode = 326 target = 1 timing = 7 probability1 = 0 parameter1 = 160 parameter2 = 104 silent = 1 STR_VAR resource = ~RABIES_#~ END
+LPF ADD_ITEM_EFFECT INT_VAR type = 1 opcode = 326 target = 1 timing = 7 probability1 = 0 parameter1 = 104 parameter2 = 104 silent = 1 STR_VAR resource = ~RABIES_#~ END
+LPF ADD_ITEM_EFFECT INT_VAR type = 1 opcode = 326 target = 1 timing = 7 probability1 = 0 parameter1 = 107 parameter2 = 104 silent = 1 STR_VAR resource = ~RABIES_#~ END
+LPF ADD_ITEM_EFFECT INT_VAR type = 1 opcode = 326 target = 1 timing = 7 probability1 = 0 parameter1 = 109 parameter2 = 104 silent = 1 STR_VAR resource = ~RABIES_#~ END
+LPF ADD_ITEM_EFFECT INT_VAR type = 1 opcode = 326 target = 1 timing = 7 probability1 = 0 parameter1 = 167 parameter2 = 104 silent = 1 STR_VAR resource = ~RABIES_#~ END
+LPF ADD_ITEM_EFFECT INT_VAR type = 1 opcode = 326 target = 1 timing = 7 probability1 = 0 parameter1 = 122 parameter2 = 104 silent = 1 STR_VAR resource = ~RABIES_#~ END
+LPF ADD_ITEM_EFFECT INT_VAR type = 1 opcode = 326 target = 1 timing = 7 probability1 = 0 parameter1 = 127 parameter2 = 104 silent = 1 STR_VAR resource = ~RABIES_#~ END
+LPF ADD_ITEM_EFFECT INT_VAR type = 1 opcode = 326 target = 1 timing = 7 probability1 = 0 parameter1 = 118 parameter2 = 104 silent = 1 STR_VAR resource = ~RABIES_#~ END
+LPF ADD_ITEM_EFFECT INT_VAR type = 1 opcode = 326 target = 1 timing = 7 probability1 = 0 parameter1 = 116 parameter2 = 104 silent = 1 STR_VAR resource = ~RABIES_#~ END
+END
+END
+BUT_ONLY
+
+COPY_EXISTING_REGEXP GLOB ~.*\.CRE~ ~override~
+
+PATCH_IF (SOURCE_SIZE > 716) THEN BEGIN
+
+READ_STRREF 0x8 name
+READ_LONG 0x8 name2
+READ_BYTE  0x270 ea
+READ_BYTE  0x271 general
+READ_BYTE  0x272 race
+READ_BYTE  0x273 class
+READ_SHORT 0x28 animation
+READ_ASCII 0x280 deathvar
+READ_BYTE 0x275 gender
+READ_LONG 0x10 flags1
+READ_LONG 0x20 flags2
+READ_SHORT 0x24 current-hp
+
+PATCH_IF class = 134 THEN BEGIN 
+
+WRITE_BYTE 0x23A 1
+
+END
+
+PATCH_IF class = 135 THEN BEGIN 
+
+WRITE_BYTE 0x23A 13
+
+END
+
+PATCH_IF race = 148 THEN BEGIN
+
+WRITE_BYTE 0x23A 1
+
+END
+
+PATCH_IF animation = 30464 & !(~%SOURCE_RES%~ STRING_EQUAL_CASE ~KORAX~) THEN BEGIN
+
+WRITE_BYTE 0x2E 20
+
+END
+
+PATCH_IF ~%SOURCE_RES%~ STRING_EQUAL_CASE ~KORAX~ THEN BEGIN
+
+WRITE_BYTE 0x2E 16
+
+END
+
+PATCH_IF animation = 30466 THEN BEGIN
+
+WRITE_BYTE 0x2E 94
+
+END
+
+PATCH_IF animation = 16385 || (~%name%~ STRING_EQUAL_CASE ~No such index~) || name2 = 0 THEN BEGIN
+
+LPF ADD_SPELL_EFFECT INT_VAR opcode = 206 target = 2 duration = 9 STR_VAR resource = ~ANIDI1_#~ END
+LPF ADD_SPELL_EFFECT INT_VAR opcode = 206 target = 2 duration = 9 STR_VAR resource = ~ANIDI2_#~ END
+LPF ADD_SPELL_EFFECT INT_VAR opcode = 206 target = 2 duration = 9 STR_VAR resource = ~ANIDI3_#~ END
+LPF ADD_SPELL_EFFECT INT_VAR opcode = 206 target = 2 duration = 9 STR_VAR resource = ~ANIDI4_#~ END
+LPF ADD_SPELL_EFFECT INT_VAR opcode = 206 target = 2 duration = 9 STR_VAR resource = ~ANIDI5_#~ END
+LPF ADD_SPELL_EFFECT INT_VAR opcode = 206 target = 2 duration = 9 STR_VAR resource = ~ANIDI6_#~ END
+
+END
+
+PATCH_IF (animation = 49664 || animation = 32002 || animation = 32003 || animation = 49408) THEN BEGIN
+
+LPF ADD_CRE_EFFECT INT_VAR opcode = 309 target = 1 timing = 9 parameter1 = 1 parameter2 = 0 STR_VAR resource = ~USELESS~ END
+
+END
+ 
+PATCH_IF current-hp > 0 & ((flags2 & BIT11) != BIT11) & animation != 32588 & animation != 32589 & animation != 32571 & animation != 32584 & ((~%SOURCE_RES%~ STRING_CONTAINS_REGEXP ~SPWOLF~) == 1) & ((~%SOURCE_RES%~ STRING_CONTAINS_REGEXP ~BDSHA~) == 1) & ((~%SOURCE_RES%~ STRING_CONTAINS_REGEXP ~SPBEAR~) == 1) & ((~%SOURCE_RES%~ STRING_CONTAINS_REGEXP ~SPIRLION~) == 1) & ((~%SOURCE_RES%~ STRING_CONTAINS_REGEXP ~SPIRBEAR~) == 1) & ((~%SOURCE_RES%~ STRING_CONTAINS_REGEXP ~SPIRSNAK~) == 1) & ((~%SOURCE_RES%~ STRING_CONTAINS_REGEXP ~SPLION~) == 1) & gender != 7 & race != 176 & race != 175 & race != 132 & race != 133 & race != 134 & race != 145 THEN BEGIN  
+  
+PATCH_IF ((flags1 & BIT1) != BIT1) THEN BEGIN
+  
+WRITE_LONG 0x10 THIS | BIT2
+
+END
+END
+
+PATCH_IF (general = 4 || race = 144 || race = 145 || race = 119 || gender = 7) & !(FILE_CONTAINS_EVALUATED (~pdialog.2da~ ~%deathvar%~)) THEN BEGIN
+
+ADD_CRE_ITEM ~HELMNOAN~ #0 #0 #0 ~UNDROPPABLE~ ~HELMET~
+LPF ADD_CRE_EFFECT INT_VAR opcode = 146 target = 1 parameter2 = 1 timing = 1 STR_VAR resource = ~UNDPRO_#~ END
+LPF ADD_CRE_EFFECT INT_VAR opcode = 206 target = 1 timing = 9 STR_VAR resource = ~ANIAAR_#~ END
+LPF ADD_CRE_EFFECT INT_VAR opcode = 206 target = 1 timing = 9 STR_VAR resource = ~ANIAAL_#~ END
+LPF ADD_CRE_EFFECT INT_VAR opcode = 206 target = 1 timing = 9 STR_VAR resource = ~ANIROB_#~ END
+
+END
+
+PATCH_IF general = 4 & gender != 7 & class != 134 & class != 198 & !(FILE_CONTAINS_EVALUATED (~pdialog.2da~ ~%deathvar%~))  THEN BEGIN
+
+LPF ADD_CRE_EFFECT INT_VAR opcode = 146 target = 1 parameter2 = 1 timing = 1 STR_VAR resource = ~UNDOF1_#~ END
+
+
+END
+
+PATCH_IF (((general = 4 || general = 255) & race != 175 & race != 133 & race != 134 & race != 181 & race != 132 & race != 145 & race != 136) || gender = 7) & !FILE_CONTAINS_EVALUATED (~pdialog.2da~ ~%deathvar%~) THEN BEGIN
+
+LPF ADD_CRE_EFFECT INT_VAR opcode = 146 target = 1 parameter2 = 1 timing = 1 STR_VAR resource = ~UNDOF2_#~ END
+END
+
+PATCH_IF (%name% STRING_EQUAL_CASE ~Hexxat~) THEN BEGIN
+
+LPF ADD_CRE_EFFECT INT_VAR opcode = 146 target = 1 parameter2 = 1 timing = 1 STR_VAR resource = ~UNDPRO_#~ END
+LPF ADD_CRE_EFFECT INT_VAR opcode = 206 target = 1 timing = 9 STR_VAR resource = ~ANIAAR_#~ END
+LPF ADD_CRE_EFFECT INT_VAR opcode = 206 target = 1 timing = 9 STR_VAR resource = ~ANIAAL_#~ END
+END
+
+PATCH_IF current-hp > 0 & (FILE_CONTAINS_EVALUATED (~pdialog.2da~ ~%deathvar%~)) & (general = 1 || general = 2 || general = 5 || general = 255)
+  THEN BEGIN
+    LPF ADD_CRE_EFFECT INT_VAR opcode = 309 target = 1 timing = 9 duration = 0 resist_dispel = 0 probability1 = 100 parameter1 = 1 parameter2 = 0 STR_VAR resource = ~PCPCPC~ END
+	LPF ADD_CRE_EFFECT INT_VAR opcode = 206 target = 1 timing = 9 duration = 0 resist_dispel = 0 probability1 = 100 STR_VAR resource = ~ANIREM_#~ END
+	LPF ADD_CRE_EFFECT INT_VAR opcode = 206 target = 1 timing = 9 duration = 0 resist_dispel = 0 probability1 = 100 STR_VAR resource = ~ANIGON_#~ END
+	
+	END
+
+  PATCH_IF race = 148 THEN BEGIN
+    LPF ADD_CRE_EFFECT INT_VAR opcode = 146 target = 1 timing = 1 parameter2 = 1 STR_VAR resource = ~ANIFL1_#~ END
+	END
+	
+  PATCH_IF current-hp > 0 & ((flags2 & BIT11) != BIT11) & ea != 1 & (general = 1 || general = 2 || general = 5 || general = 255) & race != 144 & race != 145 & animation != 1638 & animation != 25605 & animation != 25606 &  animation != 32569  &  animation != 32588 & animation != 32589 &  animation != 32571 & animation != 32584 & ((~%SOURCE_RES%~ STRING_CONTAINS_REGEXP ~SPWOLF~) == 1) & ((~%SOURCE_RES%~ STRING_CONTAINS_REGEXP ~BDSHA~) == 1) & ((~%SOURCE_RES%~ STRING_CONTAINS_REGEXP ~SPBEAR~) == 1) & ((~%SOURCE_RES%~ STRING_CONTAINS_REGEXP ~SPIRLION~) == 1) & ((~%SOURCE_RES%~ STRING_CONTAINS_REGEXP ~SPIRBEAR~) == 1) & ((~%SOURCE_RES%~ STRING_CONTAINS_REGEXP ~SPIRSNAK~) == 1) & ((~%SOURCE_RES%~ STRING_CONTAINS_REGEXP ~SPLION~) == 1) & gender != 7 & race != 176
+  THEN BEGIN
+    	LPF ADD_CRE_EFFECT INT_VAR opcode = 146 target = 1 timing = 1 parameter2 = 1 STR_VAR resource = ~ANIOUT_#~ END
+		
+END
+
+PATCH_IF ((current-hp = 0) || ((flags2 & BIT11) == BIT11)) & ea != 1 & (general = 1 || general = 2 || general = 5 || general = 255) & race != 144 & race != 145 & animation != 1638 & animation != 25605 & animation != 25606 &  animation != 32569  &  animation != 32588 & animation != 32589 &  animation != 32571 & animation != 32584 & ((~%SOURCE_RES%~ STRING_CONTAINS_REGEXP ~SPWOLF~) == 1) & ((~%SOURCE_RES%~ STRING_CONTAINS_REGEXP ~BDSHA~) == 1) & ((~%SOURCE_RES%~ STRING_CONTAINS_REGEXP ~SPBEAR~) == 1) & ((~%SOURCE_RES%~ STRING_CONTAINS_REGEXP ~SPIRLION~) == 1) & ((~%SOURCE_RES%~ STRING_CONTAINS_REGEXP ~SPIRBEAR~) == 1) & ((~%SOURCE_RES%~ STRING_CONTAINS_REGEXP ~SPIRSNAK~) == 1) & ((~%SOURCE_RES%~ STRING_CONTAINS_REGEXP ~SPLION~) == 1) & ((~%SOURCE_RES%~ STRING_CONTAINS_REGEXP ~ANICC~) == 1) & gender != 7 & race != 176
+  THEN BEGIN
+    	WRITE_LONG 0x20 THIS & `BIT11
+		WRITE_SHORT 0x24 0
+		LPF ADD_CRE_EFFECT INT_VAR opcode = 272 target = 1 timing = 9 parameter1 = 6 parameter2 = 3 STR_VAR resource = ~ANALTC_#~ END
+		LPF ADD_CRE_EFFECT INT_VAR opcode = 272 target = 1 timing = 9 parameter1 = 17000 parameter2 = 3 STR_VAR resource = ~ANIRE3_#~ END
+		LPF ADD_CRE_EFFECT INT_VAR opcode = 272 target = 1 timing = 9 parameter1 = 300 parameter2 = 3 STR_VAR resource = ~ANIRE1_#~ END
+		
+		PATCH_IF ((~%SOURCE_RES%~ STRING_CONTAINS_REGEXP ~EMITAR2~) == 1) & general = 1 THEN BEGIN
+		
+		WRITE_ASCII 0x248 ~DIENGO_#~
+		
+		END
+END
+
+PATCH_IF ((~%SOURCE_RES%~ STRING_CONTAINS_REGEXP ~ANICC~) == 0) THEN BEGIN
+
+LPF ADD_CRE_EFFECT INT_VAR opcode = 272 target = 1 timing = 9 parameter1 = 6 parameter2 = 3 STR_VAR resource = ~ANALTC_#~ END
+		LPF ADD_CRE_EFFECT INT_VAR opcode = 272 target = 1 timing = 9 parameter1 = 17000 parameter2 = 3 STR_VAR resource = ~ANIRE3_#~ END
+		LPF ADD_CRE_EFFECT INT_VAR opcode = 101 target = 1 timing = 9 parameter2 = 51 END
+		LPF ADD_CRE_EFFECT INT_VAR opcode = 101 target = 1 timing = 9 parameter2 = 7 END
+		
+		END
+
+PATCH_IF animation = 32000 || animation = 60944 || animation = 60928 THEN BEGIN 
+
+LPF ADD_CRE_EFFECT INT_VAR opcode = 146 target = 1 timing = 1 parameter2 = 1 STR_VAR resource = ~ANIZOM_#~ END
+
+REPLACE_TEXTUALLY ~B1-8~ ~Z1-8_#~
+
+END
+
+  PATCH_IF animation = 50944 || animation = 50960 THEN BEGIN
+    LPF ADD_CRE_EFFECT INT_VAR opcode = 309 target = 1 timing = 9 duration = 0 resist_dispel = 0 probability1 = 100 parameter1 = 1 parameter2 = 0 STR_VAR resource = ~CHILD~ END
+  END
+
+  PATCH_IF animation = 46592 THEN BEGIN
+	WRITE_SHORT 0x28 51712
+  END
+  
+  PATCH_IF animation = 45568 THEN BEGIN
+	WRITE_SHORT 0x28 50688
+  END
+  
+  PATCH_IF animation = 45824 THEN BEGIN
+	WRITE_SHORT 0x28 50944
+  END
+  
+  PATCH_IF animation = 46080 THEN BEGIN
+	WRITE_SHORT 0x28 51200
+  END
+  
+  PATCH_IF animation = 46096 THEN BEGIN
+	WRITE_SHORT 0x28 51216
+  END
+  
+  PATCH_IF animation = 45840 THEN BEGIN
+	WRITE_SHORT 0x28 50960
+  END
+  
+  PATCH_IF animation = 45584 THEN BEGIN
+	WRITE_SHORT 0x28 50704
+  END
+  
+  PATCH_IF animation = 46608 THEN BEGIN
+	WRITE_SHORT 0x28 51728
+  END
+  
+  PATCH_IF animation = 46336 THEN BEGIN
+	WRITE_SHORT 0x28 51456
+  END
+  
+  PATCH_IF animation = 46352 THEN BEGIN
+	WRITE_SHORT 0x28 51472
+  END
+  
+  PATCH_IF animation = 46848 THEN BEGIN
+	WRITE_SHORT 0x28 51968
+  END
+  
+  PATCH_IF class = 3 || class = 14 || class = 18 || class = 17 || class = 8 || class = 17 || class = 6 THEN BEGIN
+	
+	ADD_KNOWN_SPELL ~SKESEP_#~ #2 ~priest~
+	ADD_KNOWN_SPELL ~NIGROM_#~ #0 ~priest~
+	ADD_KNOWN_SPELL ~GIFTOL_#~ #4 ~priest~
+
+  END
+ 
+  PATCH_IF (class = 3 | class = 8 | class = 14 | class = 15 | class = 17 | class = 18 | class = 6) THEN BEGIN
+
+	ADD_KNOWN_SPELL ~CREMAT_#~ #0 ~priest~
+
+  END
+
+  PATCH_IF (class = 11 | class = 12 | class = 16 | class = 18 | class = 21) THEN BEGIN
+
+	ADD_KNOWN_SPELL ~RABBIT_#~ #0 ~priest~
+
+  END
+
+END
+BUT_ONLY
+
+COPY_EXISTING_REGEXP GLOB ~.*\.SPL~ ~override~
+
+PATCH_IF (SOURCE_SIZE > 112) THEN BEGIN
+
+READ_LONG 0x8 name1
+READ_STRREF 0x8 name2
+READ_SHORT 0x1C type
+READ_SHORT 0x68 abs
+
+PATCH_IF abs > 0 THEN BEGIN
+
+LPF CLONE_EFFECT INT_VAR check_globals = 0 match_opcode = 12 match_parameter2 = 0x00080000 parameter2 = 0 opcode = 321 target = 2 timing = 1 probability1 = 50 dicesize = 0 dicenumber = 0 silent = 1 STR_VAR resource = ~RABIE2_#~ END
+LPF CLONE_EFFECT INT_VAR check_globals = 0 match_opcode = 12 match_parameter2 = 0x00080001 parameter2 = 0 opcode = 321 target = 2 timing = 1 probability1 = 50 dicesize = 0 dicenumber = 0 silent = 1 STR_VAR resource = ~RABIE2_#~ END
+LPF CLONE_EFFECT INT_VAR check_globals = 0 match_opcode = 12 match_parameter2 = 0x00080002 parameter2 = 0 opcode = 321 target = 2 timing = 1 probability1 = 50 dicesize = 0 dicenumber = 0 silent = 1 STR_VAR resource = ~RABIE2_#~ END
+LPF CLONE_EFFECT INT_VAR check_globals = 0 match_opcode = 12 match_parameter2 = 0x00080003 parameter2 = 0 opcode = 321 target = 2 timing = 1 probability1 = 50 dicesize = 0 dicenumber = 0 silent = 1 STR_VAR resource = ~RABIE2_#~ END
+LPF CLONE_EFFECT INT_VAR check_globals = 0 match_opcode = 12 match_parameter2 = 0x00010000 parameter2 = 0 opcode = 321 target = 2 timing = 1 probability1 = 50 dicesize = 0 dicenumber = 0 silent = 1 STR_VAR resource = ~RABIE2_#~ END
+LPF CLONE_EFFECT INT_VAR check_globals = 0 match_opcode = 12 match_parameter2 = 0x00010001 parameter2 = 0 opcode = 321 target = 2 timing = 1 probability1 = 50 dicesize = 0 dicenumber = 0 silent = 1 STR_VAR resource = ~RABIE2_#~ END
+LPF CLONE_EFFECT INT_VAR check_globals = 0 match_opcode = 12 match_parameter2 = 0x00010002 parameter2 = 0 opcode = 321 target = 2 timing = 1 probability1 = 50 dicesize = 0 dicenumber = 0 silent = 1 STR_VAR resource = ~RABIE2_#~ END
+LPF CLONE_EFFECT INT_VAR check_globals = 0 match_opcode = 12 match_parameter2 = 0x00010003 parameter2 = 0 opcode = 321 target = 2 timing = 1 probability1 = 50 dicesize = 0 dicenumber = 0 silent = 1 STR_VAR resource = ~RABIE2_#~ END
+
+END
+
+PATCH_IF (type = 1 | type = 2 | type = 4) & name1 > 0 & !(~%SOURCE_RES%~ STRING_EQUAL_CASE ~ANIXZ1_#~) & !(~%SOURCE_RES%~ STRING_EQUAL_CASE ~GIFTOL_#~) THEN BEGIN
+
+LPF ADD_SPELL_CFEFFECT INT_VAR opcode = 206 target = 1 duration = 10 STR_VAR resource = ~ANIVI0_#~ END
+LPF ADD_SPELL_CFEFFECT INT_VAR opcode = 206 target = 1 duration = 10 STR_VAR resource = ~ANIEE2_#~ END
+
+END
+
+PATCH_IF ((~%name%~ STRING_CONTAINS_REGEXP ~Heal~) == 0) || (~%SOURCE_RES%~ STRING_EQUAL_CASE ~SPPR713~) THEN BEGIN
+
+LPF ADD_SPELL_EFFECT INT_VAR opcode = 321 target = 2 STR_VAR resource = ~ANIDI1_#~ END
+LPF ADD_SPELL_EFFECT INT_VAR opcode = 321 target = 2 STR_VAR resource = ~ANIDI2_#~ END
+LPF ADD_SPELL_EFFECT INT_VAR opcode = 321 target = 2 STR_VAR resource = ~ANIDI3_#~ END
+LPF ADD_SPELL_EFFECT INT_VAR opcode = 321 target = 2 STR_VAR resource = ~ANIDI5_#~ END
+LPF ADD_SPELL_EFFECT INT_VAR opcode = 321 target = 2 STR_VAR resource = ~ANIDI6_#~ END
+LPF ADD_SPELL_EFFECT INT_VAR opcode = 321 target = 2 STR_VAR resource = ~ANIDI7_#~ END
+LPF ADD_SPELL_EFFECT INT_VAR opcode = 321 target = 2 STR_VAR resource = ~RABIE2_#~ END
+LPF ADD_SPELL_EFFECT INT_VAR opcode = 321 target = 2 STR_VAR resource = ~RABIE3_#~ END
+
+END
+END
+BUT_ONLY
+
+COPY_EXISTING_REGEXP GLOB ~.*\.ITM~ ~override~
+
+PATCH_IF SOURCE_SIZE > 112 THEN BEGIN
+
+PATCH_IF ((~%SOURCE_RES%~ STRING_CONTAINS_REGEXP ~OHHEXAM~) == 0) THEN BEGIN
+
+LPF DELETE_ITEM_EQEFFECT INT_VAR match_opcode = 106 END
+LPF DELETE_ITEM_EQEFFECT INT_VAR match_opcode = 161 END
+LPF DELETE_ITEM_EQEFFECT INT_VAR match_opcode = 23 END
+END
+END
+BUT_ONLY
+
+COPY_EXISTING_REGEXP GLOB ~.*\.STO~ ~override~
+
+PATCH_IF SOURCE_SIZE > 120 THEN BEGIN
+
+READ_LONG 0x8 type
+READ_BYTE 0x10 "flags" ELSE 0
+
+PATCH_IF type = 3 & !(~%SOURCE_RES%~ STRING_EQUAL_CASE ~SARTEM01~) & !(~%SOURCE_RES%~ STRING_EQUAL_CASE ~STEGOS_#~) THEN BEGIN
+
+ADD_STORE_ITEM "SCRL63" #0 #0 #0 ~IDENTIFIED~ #1
+ADD_STORE_ITEM "GIFTOL_#" #0 #0 #0 ~IDENTIFIED~ #1
+ADD_STORE_ITEM "CDISEA_#" #0 #0 #0 ~IDENTIFIED~ #3
+
+PATCH_IF (("%flags%" BAND 0b00010000) = 0b00010000) BEGIN
+  
+  READ_LONG 0x70 "cure_off"  ELSE 0
+  READ_LONG 0x74 "cure_num"  ELSE 0
+  
+  SET "sppr317" = 0 // cure light wounds
+    // check if cures already available
+  FOR (index = 0; index < cure_num; index = index + 1) BEGIN
+	READ_ASCII ("%cure_off%" + ("%index%" * 0x0c)) "resref"
+	PATCH_IF ("%resref%" STRING_COMPARE_CASE "sppr317" = 0) BEGIN
+	  SET "sppr317" = 1
+	END
+  END
+  // add cures if not already present
+  PATCH_IF ("%sppr317%" = 0) BEGIN // if cure not already available
+	INSERT_BYTES  ("%cure_off%" +		("%cure_num%" * 0x0c)) 0x0c
+	  WRITE_ASCII ("%cure_off%" +		("%cure_num%" * 0x0c)) ~sppr317~ // resref
+	  WRITE_LONG  ("%cure_off%" + 0x08 + ("%cure_num%" * 0x0c)) 200		// price
+	  END
+
+END
+END
+END
+BUT_ONLY
+
+ACTION_IF GAME_IS ~bgee~ THEN BEGIN
+
+COPY_EXISTING ~AR5001.ARE~ ~override~
+LPF ADD_AREA_ITEM INT_VAR container_to_add_to = 5 STR_VAR item_to_add = ~ANIITM_#~ END
+LPF ALTER_AREA_CONTAINER STR_VAR container_name = ~Container 5~ container_script = ~ANIIT2_#~ END
+LPF fj_are_structure INT_VAR fj_delete_mode = 1 STR_VAR fj_structure_type = actor END
+LPF fj_are_structure INT_VAR fj_delete_mode = 2 STR_VAR fj_structure_type = actor END
+LPF ALTER_AREA_ACTOR INT_VAR x_coord = 731 y_coord = 510 orient = 10 orient = 10 STR_VAR cre_file = ~GHOUL~ actor_name = ~Ghast~ END
+LPF fj_are_structure
+ INT_VAR
+ fj_loc_x = 790
+ fj_loc_y = 542
+ fj_orientation = 10
+ STR_VAR
+ fj_structure_type = actor
+ fj_name = ~Ghoul Plus~
+ fj_cre_resref = GHOUL
+ END
+BUT_ONLY
+
+END 
+
+ACTION_IF GAME_IS ~eet~ THEN BEGIN
+
+COPY_EXISTING ~BG5001.ARE~ ~override~
+LPF ADD_AREA_ITEM INT_VAR container_to_add_to = 2 STR_VAR item_to_add = ~ANIITM_#~ END
+LPF ALTER_AREA_CONTAINER STR_VAR container_name = ~Container 2~ container_script = ~ANIIT2_#~ END
+BUT_ONLY
+
+END 
+
+COPY_EXISTING ~AGIITM_#.CRE~ ~override~
+SAY NAME1 ~Ghast~
+SAY NAME2 ~Ghast~
+BUT_ONLY
+
+COPY_EXISTING ~ANIITM_#.ITM~ ~override~
+SAY NAME1 ~Carcass Drape~
+SAY NAME2 ~Breakfast of Kelumshaan~
+SAY UNIDENTIFIED_DESC ~This covering is made up of yellowed bones, ligaments, pieces of wire and ancient-looking, dry, gray morsels of some sort, all connected in a kind of net. It is a revolting find, and one of the strangest in your experience.~
+SAY IDENTIFIED_DESC ~Kelumshaan was the only necromancer out of Myth Drannor on record as well as the first known ghoul lord. The elf's studies into the nature of death began peacefully and out of scholarly interest, the legend goes, but the ruling nobles, gaining superficial familiarity with her experiments, were scandalized and cast her out. In the following years she wandered the lands around the Moonsea, trying to offer her services as a sorceress without much luck, distrusted for being an elf outside of her home as much as she was reviled in it, her mind deteriorating with her fortunes. A mere dozen years of these travails turned an elven beauty in the prime of her life into a weathered, embittered crone.
+
+At last she made a nest in the ruins of a tower in northern Cormyr, near a graveyard frequented by ghouls. She managed to learn their language, gain their friendship and ultimately joined them in their activities, even masterminding the wholesale slaughter of a small human town, whose inhabitants were devoured to a man. Kelumshaan perished in this fight, but her spiritual lot had been cast, and some time later she rose as a powerful undead thing. This "cloak" of ancient ligaments and bones is the leftovers of Kelumshaan's first meal among the ghouls, knitted together by their clawed hands for reasons beyond human understanding. It has no powers as such, but something has preserved it for millennia, and it has a symbolic meaning to all ghouls. Even trying something like this on says a great deal about the wearer, however.
+
+STATISTICS:
+
+Equipped abilities:
+- Alignment set to Chaotic Evil
+- Charisma: -5
+- Reduces Reputation by 1 whenever put on, if it is above 5
+- Attracts ghouls
+
+Weight: 6~
+BUT_ONLY
+
+ADD_PROJECTILE      ~override/ANIMA1_#.PRO~
+
+COPY_EXISTING ~ANIDDD_#.SPL~ ~override~
+  WRITE_SHORT   0x98 ~%ANIMA1_#%~
+  BUT_ONLY
+
+ADD_PROJECTILE      ~override/ANIMA2_#.PRO~
+
+COPY_EXISTING ~ANIEEE_#.SPL~ ~override~
+  WRITE_SHORT   0x98 ~%ANIMA2_#%~
+BUT_ONLY
+
+COPY_EXISTING ~ANIEE2_#.SPL~ ~override~
+  SAY 0x9E @32
+  BUT_ONLY
+
+ADD_PROJECTILE      ~override/ANIMA3_#.PRO~
+
+COPY_EXISTING ~ANIMA0_#.SPL~ ~override~
+  WRITE_SHORT   0x98 ~%ANIMA3_#%~
+  BUT_ONLY
+  
+  COPY_EXISTING ~ANIMA1_#.SPL~ ~override~
+  SAY   0x7EE @31
+  BUT_ONLY
+
+ADD_PROJECTILE      ~override/ANIMA4_#.PRO~
+
+COPY_EXISTING ~ANIAM2_#.CRE~ ~override~
+  WRITE_SHORT   0x500 (%ANIMA4_#% - 1)
+  BUT_ONLY
+
+COPY_EXISTING ~ANIAM3_#.CRE~ ~override~
+  WRITE_SHORT   0x500 (%ANIMA4_#% - 1)
+  BUT_ONLY
+
+ADD_PROJECTILE      ~override/ANIREM_#.PRO~
+
+COPY_EXISTING ~ANIRE2_#.SPL~ ~override~
+  WRITE_SHORT   0x98 ~%ANIREM_#%~
+  BUT_ONLY
+  
+ACTION_IF FILE_EXISTS_IN_GAME ~SPPR504.SPL~ THEN BEGIN
+
+COPY_EXISTING ~SPPR504.SPL~ ~override~
+LPF ADD_CRE_EFFECT INT_VAR opcode = 146 target = 1 timing = 9 duration = 0 resist_dispel = 0 probability1 = 100 parameter2 = 1 STR_VAR resource = ~ANI000_#~ END
+BUT_ONLY
+
+END
+
+ACTION_IF FILE_EXISTS_IN_GAME ~SPPR729.SPL~ THEN BEGIN
+
+COPY_EXISTING ~SPPR729.SPL~ ~override~
+LPF ADD_CRE_EFFECT INT_VAR opcode = 146 target = 1 timing = 9 duration = 0 resist_dispel = 0 probability1 = 100 parameter2 = 1 STR_VAR resource = ~ANI000_#~ END
+BUT_ONLY
+
+END
+
+ACTION_IF FILE_EXISTS_IN_GAME ~SPPR999.SPL~ THEN BEGIN
+
+COPY_EXISTING ~SPPR999.SPL~ ~override~
+LPF ADD_CRE_EFFECT INT_VAR opcode = 146 target = 1 timing = 9 duration = 0 resist_dispel = 0 probability1 = 100 parameter2 = 1 STR_VAR resource = ~ANI000_#~ END
+BUT_ONLY
+
+END
+
+ACTION_IF FILE_EXISTS_IN_GAME ~SPWISH10.SPL~ THEN BEGIN
+
+COPY_EXISTING ~SPWISH10.SPL~ ~override~
+LPF ADD_CRE_EFFECT INT_VAR opcode = 146 target = 1 timing = 9 duration = 0 resist_dispel = 0 probability1 = 100 parameter2 = 1 STR_VAR resource = ~ANI000_#~ END
+BUT_ONLY
+
+END
+
+ACTION_IF FILE_EXISTS_IN_GAME ~SPPR712.SPL~ THEN BEGIN
+
+COPY_EXISTING ~SPPR712.SPL~ ~override~
+LPF ADD_CRE_EFFECT INT_VAR opcode = 146 target = 1 timing = 9 duration = 0 resist_dispel = 0 probability1 = 100 parameter2 = 1 STR_VAR resource = ~ANI000_#~ END
+BUT_ONLY
+END
+
+COPY_EXISTING ~CREMAT_#.SPL~ ~override~
+SAY NAME1 ~Cremation~
+SAY UNIDENTIFIED_DESC ~Cremation
+(Abjuration)
+
+Level: 1
+Range: 0
+Duration: 5 rounds
+Casting Time: 4
+Area of Effect: The caster
+Saving Throw: None
+
+By giving dead bodies a fiery sending-off, the priest firmly directs their souls to the afterlife and clears away infectious miasma. After preparing for the rites, <PRO_HESHE> comes close to the corpses to burn them one by one. A little personal experience comes with the trouble and risk.~
+BUT_ONLY
+
+COPY_EXISTING ~RABBIT_#.SPL~ ~override~
+SAY NAME1 ~Pass into Grass~
+SAY UNIDENTIFIED_DESC ~Pass into Grass
+(Abjuration)
+
+Level: 1
+Range: 0
+Duration: 5 rounds
+Casting Time: 4
+Area of Effect: The caster
+Saving Throw: None
+
+A druid can offer souls of the dead a simple next turn on the wheel of reincarnation - a rabbit's life. Having prepared the rite, the caster comes close to dead bodies and sees them transformed into fresh living bunnies. The rabbits are friendly to the party for a few minutes, but soon forget about the characters completely. The druid, for <PRO_HISHER> part, has neutralized the threat of disease and gets a little experience out of it.~
+BUT_ONLY
+
+COPY_EXISTING ~RABBIT_#.CRE~ ~override~
+SAY NAME1 ~Rabbit~
+SAY NAME2 ~Rabbit~
+BUT_ONLY
+
+COPY_EXISTING ~SPPR301.SPL~ ~override~
+SAY NAME1 ~Animate Dead~
+SAY UNIDENTIFIED_DESC ~Animate Dead
+(Necromancy)
+
+Level: 3
+Sphere: Necromantic
+Range: 0
+Duration: Permanent
+Casting Time: 9
+Area of Effect: 13 ft. radius 
+Saving Throw: None
+
+With the Animate Dead spell the priest can raise nearby corpses as the lowliest variety of walking dead, zombies, under <PRO_HISHER> command. The caster can bring to this pseudolife creatures as many Hit Dice or levels as <PRO_HESHE> <PRO_HIMHER>self has priest levels (up to 25). Fractions are dropped - a creature cannot be partly animated. Thus, a 5th level priest could animate a pair of giant spiders or 5 xvarts, but not a giant. In a mix of corpses weaker and nearer creatures are generally animated first. Animating continues until all suitable corpses have risen, until 2 rounds later or until the caster moves from the spot.
+
+Golems and other constructs and elementals cannot be animated. All others have normal zombie statistics: THAC0 19, 1 attack per round, Armor Class 8 and poor saving throws. Humanoids have 2 Hit Dice, regardless of their former levels, others retain their former hit points. Zombies made from people do 1d6 or 1d8 damage, depending on size, while giants slug for more on account of their size, but no zombie has the strength, dexterity or constitution it might have had in life (let alone mental abilities). Monsters still have their natural weaponry, such as spiders' poisonous fangs, but no special powers or breath weapons. They lose magic resistance, but gain the usual immunities of the undead to fear, illusions, enchantments, critical hits, backstabbing, level drain and cold. Zombies cannot be healed, but they can be animated again, unless destroyed by massive damage.
+
+A body desecrated by animation is lost to a Raise Dead or a Resurrection. Disagreeable companions may be made into zombies if first evicted from the party, though the transformation takes longer in their case. Zombies will follow the group between areas, whether that is convenient or not. Guards, lawmen and noble paladins will sound an alarm and attack, should they see any of the living dead.~
+WRITE_SHORT   0x98 ~%ANIMA3_#%~
+BUT_ONLY
+
+COPY_EXISTING ~SPCL106.SPL~ ~override~
+SAY NAME1 ~Animate Dead~
+SAY UNIDENTIFIED_DESC ~Animate Dead
+(Necromancy)
+
+Level: 3
+Sphere: Necromantic
+Range: 0
+Duration: Permanent
+Casting Time: 9
+Area of Effect: 13 ft. radius 
+Saving Throw: None
+
+With the Animate Dead spell the blackguard can raise nearby corpses as the lowliest variety of walking dead, zombies, under <PRO_HISHER> command. The caster can bring to this pseudolife as many Hit Dice or levels as <PRO_HESHE> <PRO_HIMHER>self has levels (up to 25). Fractions are dropped - a creature cannot be partly animated. Thus, a 5th level blackguard could animate a pair of giant spiders or 5 xvarts, but not a giant. In a mix of corpses weaker and nearer creatures are generally animated first. Animating continues until all suitable corpses have risen, until 2 rounds later or until the caster moves from the spot.
+
+Golems and other constructs and elementals cannot be animated. All others have normal zombie statistics: THAC0 19, 1 attack per round, Armor Class 8 and poor saving throws. Humanoids have 2 Hit Dice, regardless of their former levels, others retain their former hit points. Zombies made from people do 1d6 or 1d8 damage, depending on size, while giants slug for more on account of their size, but no zombie has the strength, dexterity or constitution it might have had in life (let alone mental abilities). Monsters still have their natural weaponry, such as spiders' poisonous fangs, but no special powers or breath weapons. They lose magic resistance, but gain the usual immunities of the undead to fear, illusions, enchantments, critical hits, backstabbing, level drain and cold. Zombies cannot be healed, but they can be animated again, unless destroyed by massive damage.
+
+A body desecrated by animation is lost to a Raise Dead or a Resurrection. Disagreeable companions may be made into zombies if first evicted from the party, though the transformation takes longer in their case. Zombies will follow the group between areas, whether that is convenient or not. Guards, lawmen and noble paladins will sound an alarm and attack, should they see any of the living dead.~
+WRITE_SHORT 0x98 ~%ANIMA3_#%~
+BUT_ONLY
+
+ADD_PROJECTILE ~override/ZOMVAL_#.PRO~
+
+COPY_EXISTING ~ZOMVAL_#.SPL~ ~override~
+SAY NAME1 ~Zombie Valet~
+SAY UNIDENTIFIED_DESC ~Zombie Valet
+(Necromancy)
+
+Level: 4
+Range: 50 ft.
+Duration: Permanent
+Casting Time: 4
+Area of Effect: 1 dead creature
+Saving Throw: None
+
+More powerful wizards and priests can raise whole armies, but even one immortal servant, onboarded with this spell, can be useful for many tasks, from opening doors to sweeping floors and scaring away pesky children. The body nearest to the spell's targeting point will be affected. Any formerly living creature can be raised, provided that its total number of levels or Hit Dice is no greater than the caster's level and does not exceeed 25. If the undead valet is commanded to fight, it does so as any zombie: THAC0 18, 2 Hit Dice for characters (monsters and animals have their full former hit points), damage 1d8 and very slow. Very few fighting abilities available in life survive after death - poison is usually the only one that remains. Like all undead, zombies are indifferent to cold, hold/sleep and morale failure. A dispatched valet can be raised again, unless smashed or blasted beyond repair.~
+LPF ALTER_SPELL_HEADER INT_VAR projectile = ~%ZOMVAL_#%~ END
+BUT_ONLY
+
+COPY_EXISTING ~ZOMVAL_#.ITM~ ~override~
+SAY NAME2 ~Zombie Valet~
+SAY IDENTIFIED_DESC ~Zombie Valet
+(Necromancy)
+
+Level: 4
+Range: 50 ft.
+Duration: Permanent
+Casting Time: 4
+Area of Effect: 1 dead creature
+Saving Throw: None
+
+More powerful wizards and priests can raise whole armies, but even one immortal servant, onboarded with this spell, can be useful for many tasks, from opening doors to sweeping floors and scaring away pesky children. The body nearest to the spell's targeting point will be affected. Any formerly living creature can be raised, provided that its total number of levels or Hit Dice is no greater than the caster's level and does not exceeed 25. If the undead valet is commanded to fight, it does so as any zombie: THAC0 18, 2 Hit Dice for characters (monsters and animals have their full former hit points), damage 1d8 and very slow. Very few fighting abilities available in life survive after death - poison is usually the only one that remains. Like all undead, zombies are indifferent to cold, hold/sleep and morale failure. A dispatched valet can be raised again, unless smashed or blasted beyond repair.~
+BUT_ONLY
+
+
+ 
+COPY_EXISTING ~SPWI501.SPL~ ~override~
+SAY NAME1 ~Animate Dead~
+SAY UNIDENTIFIED_DESC ~Animate Dead
+(Necromancy)
+
+Level: 5
+Range: 0
+Duration: Permanent
+Casting Time: 9
+Area of Effect: 13 ft. radius 
+Saving Throw: None
+
+With the Animate Dead spell the wizard can raise nearby corpses as the lowliest variety of walking dead, zombies, under <PRO_HISHER> command. The caster can bring to this pseudolife as many Hit Dice or levels as <PRO_HESHE> <PRO_HIMHER>self has wizard levels (up to 25). Fractions are dropped - a creature cannot be partly animated. Thus, a 9th level wizard could animate 3 ogres out of a dead 4, but not a giant. In a mix of corpses weaker and nearer creatures are generally animated first. Animating continues until all suitable corpses have risen, until 2 rounds later or until the caster moves from the spot.
+
+Golems and other constructs and elementals cannot be animated. All others have normal zombie statistics: THAC0 19, 1 attack per round, Armor Class 8 and poor saving throws. Humanoids have 2 Hit Dice, regardless of their former levels, others retain their former hit points. Zombies made from people do 1d6 or 1d8 damage, depending on size, while giants slug for more on account of their size, but no zombie has the strength, dexterity or constitution it might have had in life (let alone mental abilities). Monsters still have their natural weaponry, such as spiders' poisonous fangs, but no special powers or breath weapons. They lose magic resistance, but gain the usual immunities of the undead to fear, illusions, enchantments, critical hits, backstabbing, level drain and cold. Zombies cannot be healed, but they can be animated again, unless destroyed by massive damage.
+
+A body desecrated by animation is lost to a Raise Dead or a Resurrection. Disagreeable companions may be made into zombies if first evicted from the party, though the transformation takes longer in their case. Zombies will follow the group between areas, whether that is convenient or not. Guards, lawmen and noble paladins will sound an alarm and attack, should they see any of the living dead.~
+WRITE_SHORT 0x98 ~%ANIMA3_#%~
+BUT_ONLY
+
+COPY_EXISTING ~SCRL2D.ITM~ ~override~
+SAY NAME2 ~Animate Dead~
+SAY IDENTIFIED_DESC ~Animate Dead
+(Necromancy)
+
+Level: 5
+Range: 0
+Duration: Permanent
+Casting Time: 9
+Area of Effect: 13 ft. radius 
+Saving Throw: None
+
+With the Animate Dead spell the wizard can raise nearby corpses as the lowliest variety of walking dead, zombies, under <PRO_HISHER> command. The caster can bring to this pseudolife as many Hit Dice or levels as <PRO_HESHE> <PRO_HIMHER>self has wizard levels (up to 25). Fractions are dropped - a creature cannot be partly animated. Thus, a 9th level wizard could animate 3 ogres out of a dead 4, but not a giant. In a mix of corpses weaker and nearer creatures are generally animated first. Animating continues until all suitable corpses have risen, until 2 rounds later or until the caster moves from the spot.
+
+Golems and other constructs and elementals cannot be animated. All others have normal zombie statistics: THAC0 19, 1 attack per round, Armor Class 8 and poor saving throws. Humanoids have 2 Hit Dice, regardless of their former levels, others retain their former hit points. Zombies made from people do 1d6 or 1d8 damage, depending on size, while giants slug for more on account of their size, but no zombie has the strength, dexterity or constitution it might have had in life (let alone mental abilities). Monsters still have their natural weaponry, such as spiders' poisonous fangs, but no special powers or breath weapons. They lose magic resistance, but gain the usual immunities of the undead to fear, illusions, enchantments, critical hits, backstabbing, level drain and cold. Zombies cannot be healed, but they can be animated again, unless destroyed by massive damage.
+
+A body desecrated by animation is lost to a Raise Dead or a Resurrection. Disagreeable companions may be made into zombies if first evicted from the party, though the transformation takes longer in their case. Zombies will follow the group between areas, whether that is convenient or not. Guards, lawmen and noble paladins will sound an alarm and attack, should they see any of the living dead.~
+BUT_ONLY
+
+COPY_EXISTING ~THANAT_#.ITM~ ~override~
+SAY NAME2 ~<CHARNAME>'s Notes on the Irrepressible Dead~
+SAY IDENTIFIED_DESC ~The undead down below won't stay down. Sorcerous sight gives me a clue why: the violet thaumaturgic channel is shortened and looped at b2. The "soul" is separated from vitality at Accsu-2b, and the vitality is sent back through the - Die, you! - back through all of the elemental channels except earth's. This is completely abnormal and suggests some kind of curse. Stay down, you bastard! I might be able to derive a spell from this, if - Had to take a running break. The formula should be uuf/1 * at (fire, air, water) - ff b2 & c3/b2$ or 3$. They are not completely indestructible, thank goodness, but it takes hammering them in pretty deep below what would kill a man or blasting them.~
+BUT_ONLY
+
+COPY_EXISTING ~THANA0_#.SPL~ ~override~
+SAY NAME1 ~<CHARNAME>'s Overtaking~
+SAY UNIDENTIFIED_DESC ~<CHARNAME>'s Overtaking
+(Necromancy)
+
+Level: 5
+Range: Touch
+Duration: Permanent
+Casting Time: 5
+Area of Effect: 1 creature
+Saving Throw: Neg.
+
+This spell causes a creature's vitality to loop after death so that instead of dissipating among the elements it flows back to the corpse and reanimates it. Although the spell can be cast on anyone, the formula was derived from observing undead and will only raise the body of a skeleton, zombie, ghoul or ghast, whether one of "natural" origins or converted previously with Animate Dead. Note that the magic does not make the creature friendly, so care should be taken to imbue undead under the caster's control, or <PRO_HESHE> will have on <PRO_HISHER> hands a near-immortal enemy! The undead can only be destroyed by extreme damage - smashing, burning down and so on, and the magic can be dispelled while they are up and about. In the active state they regenerate a point of damage every 3 rounds.~
+BUT_ONLY
+
+COPY_EXISTING ~THANA1_#.SPL~ ~override~
+LPF ALTER_EFFECT INT_VAR match_opcode = 139 parameter1 = RESOLVE_STR_REF (~Death Cycle~) END
+BUT_ONLY
+
+COPY_EXISTING ~BPLYKSUM.SPL~ ~override~
+SAY NAME1 ~Skeletal Scion~
+BUT_ONLY
+
+ACTION_IF FILE_EXISTS_IN_GAME ~SPANDE01.EFF~ THEN BEGIN
+
+COPY_EXISTING ~SKESEW_#.SPL~ ~override~
+SAY NAME1 ~Skeletal Scion~
+SAY UNIDENTIFIED_DESC ~Skeletal Scion
+(Summoning)
+
+Level: 5
+Range: 30 ft.
+Duration: 8 hours
+Casting Time: 9
+Area of Effect: Special
+Saving Throw: None
+
+This spell brings a free-willed undead skeleton from the plane of Hades and binds it to serve the caster. The type of skeleton warrior that appears depends upon the level of the wizard casting the spell.
+  1st – 6th: a 3 HD skeleton warrior wielding a long sword.
+  7th – 10th: a 5 HD skeleton warrior wielding a long sword +1.
+  11th – 14th: a 7 HD skeleton warrior wielding a bastard sword +1.
+  15th and up: a 9 HD skeleton warrior wielding a two-handed sword +1.
+The skeleton has some intelligence and can follow the caster, remain in an area and attack any creature entering the place, etc. It remains on the Prime Material Plane until it is destroyed in combat, 8 hours pass, or it is turned. The bond cannot be dispelled, but the skeleton will retaliate against the caster, if set upon.~
+BUT_ONLY
+
+COPY_EXISTING ~SKESEW_#.ITM~ ~override~
+SAY NAME2 ~Skeletal Scion~
+SAY IDENTIFIED_DESC ~Skeletal Scion
+(Summoning)
+
+Level: 5
+Range: 30 ft.
+Duration: 8 hours
+Casting Time: 9
+Area of Effect: Special
+Saving Throw: None
+
+This spell brings a free-willed undead skeleton from the plane of Hades and binds it to serve the caster. The type of skeleton warrior that appears depends upon the level of the wizard casting the spell.
+  1st – 6th: a 3 HD skeleton warrior wielding a long sword.
+  7th – 10th: a 5 HD skeleton warrior wielding a long sword +1.
+  11th – 14th: a 7 HD skeleton warrior wielding a bastard sword +1.
+  15th and up: a 9 HD skeleton warrior wielding a two-handed sword +1.
+The skeleton has some intelligence and can follow the caster, remain in an area and attack any creature entering the place, etc. It remains on the Prime Material Plane until it is destroyed in combat, 8 hours pass, or it is turned. The bond cannot be dispelled, but the skeleton will retaliate against the caster, if set upon.~
+BUT_ONLY
+
+COPY_EXISTING ~SKESEP_#.SPL~ ~override~
+SAY NAME1 ~Skeletal Scion~
+SAY UNIDENTIFIED_DESC ~Skeletal Scion
+(Summoning)
+
+Level: 5
+Sphere: Necromantic, Summoning
+Range: 30 ft.
+Duration: 8 hours
+Casting Time: 9
+Area of Effect: Special
+Saving Throw: None
+
+This spell brings a free-willed undead skeleton from the plane of Hades and binds it to serve the caster. The type of skeleton warrior that appears depends upon the level of the wizard casting the spell.
+  1st – 6th: a 3 HD skeleton warrior wielding a long sword.
+  7th – 10th: a 5 HD skeleton warrior wielding a long sword +1.
+  11th – 14th: a 7 HD skeleton warrior wielding a bastard sword +1.
+  15th and up: a 9 HD skeleton warrior wielding a two-handed sword +1.
+The skeleton has some intelligence and can follow the caster, remain in an area and attack any creature entering the place, etc. It remains on the Prime Material Plane until it is destroyed in combat, 8 hours pass, or it is turned. The bond cannot be dispelled, but the skeleton will retaliate against the caster, if set upon.~
+BUT_ONLY
+
+COPY_EXISTING ~SKELSU01.CRE~ ~override~
+SAY NAME1 ~Skeletal Scion~
+SAY NAME2 ~Skeletal Scion~
+WRITE_ASCII 0x250 ~DIGNY_#~
+WRITE_BYTE 0x23A 7
+BUT_ONLY
+
+COPY_EXISTING ~SKELSU07.CRE~ ~override~
+SAY NAME1 ~Skeletal Scion~
+SAY NAME2 ~Skeletal Scion~
+WRITE_ASCII 0x250 ~DIGNY_#~
+WRITE_BYTE 0x23A 7
+BUT_ONLY
+
+COPY_EXISTING ~SKELSU11.CRE~ ~override~
+SAY NAME1 ~Skeletal Scion~
+SAY NAME2 ~Skeletal Scion~
+WRITE_ASCII 0x250 ~DIGNY_#~
+WRITE_BYTE 0x23A 7
+BUT_ONLY
+
+COPY_EXISTING ~SKELWASU.CRE~ ~override~
+SAY NAME1 ~Skeletal Scion~
+SAY NAME2 ~Skeletal Scion~
+WRITE_ASCII 0x250 ~DIGNY_#~
+WRITE_BYTE 0x23A 7
+BUT_ONLY
+
+END
+
+COPY_EXISTING ~GIFTOL_#.SPL~ ~override~
+SAY NAME1 ~Gift of Life~
+SAY UNIDENTIFIED_DESC ~Gift of Life
+(Necromancy)
+
+Level: 5
+Sphere: Necromantic
+Range: 13 ft.
+Duration: Permanent
+Casting Time: 9
+Area of Effect: Special
+Saving Throw: None
+
+This power is equivalent to Raise Dead, but works on creatures both inside and outside the party. Those that are outside cannot be addressed directly or chosen. Rather the priest opens a conduit through which the soul of one of them can return to the world of the living. The priest should stand near the body <PRO_HESHE> desires to raise, and within or two rounds the spirit will reenter it, if the creature can be raised. Golems and other constructs, undead and elementals cannot be. Only the dead who were not enemies of the party will respond to the character's call, and the magic will be disrupted of the priest moves before the spirit returns.
+
+Very rarely another soul notices the doorway, rushes for it, and two creatures struggle out of death shoulder to shoulder.~
+BUT_ONLY
+
+COPY_EXISTING ~GIFTOL_#.ITM~ ~override~
+SAY NAME2 ~Gift of Life~
+SAY IDENTIFIED_DESC ~Gift of Life
+(Necromancy)
+
+Level: 5
+Sphere: Necromantic
+Range: 13 ft.
+Duration: Permanent
+Casting Time: 9
+Area of Effect: Special
+Saving Throw: None
+
+This power is equivalent to Raise Dead, but works on creatures both inside and outside the party. Those that are outside cannot be addressed directly or chosen. Rather the priest opens a conduit through which the soul of one of them can return to the world of the living. The priest should stand near the body <PRO_HESHE> desires to raise, and within or two rounds the spirit will reenter it, if the creature can be raised. Golems and other constructs, undead and elementals cannot be. Only the dead who were not enemies of the party will respond to the character's call, and the magic will be disrupted of the priest moves before the spirit returns.
+
+Very rarely another soul notices the doorway, rushes for it, and two creatures struggle out of death shoulder to shoulder.~
+BUT_ONLY
+
+
+COPY_EXISTING ~ANIDD0_#.CRE~ ~override~
+SAY NAME1 @31
+SAY NAME2 @31
+BUT_ONLY
+
+COPY_EXISTING ~ANIDD1_#.CRE~ ~override~
+SAY NAME1 @31
+SAY NAME2 @31
+BUT_ONLY
+
+COPY_EXISTING ~ANIDD2_#.CRE~ ~override~
+SAY NAME1 @31
+SAY NAME2 @31
+BUT_ONLY
+
+COPY_EXISTING ~ANIDD3_#.CRE~ ~override~
+SAY NAME1 @31
+SAY NAME2 @31
+BUT_ONLY
+
+COPY_EXISTING ~ANIDD4_#.CRE~ ~override~
+SAY NAME1 @31
+SAY NAME2 @31
+BUT_ONLY
+
+COPY_EXISTING ~ANIDD5_#.CRE~ ~override~
+SAY NAME1 @31
+SAY NAME2 @31
+BUT_ONLY
+
+COPY_EXISTING ~ANIDD6_#.CRE~ ~override~
+SAY NAME1 @31
+SAY NAME2 @31
+BUT_ONLY
+
+COPY_EXISTING ~ANIDD7_#.CRE~ ~override~
+SAY NAME1 @31
+SAY NAME2 @31
+BUT_ONLY
+
+COPY_EXISTING ~ANIDD8_#.CRE~ ~override~
+SAY NAME1 @31
+SAY NAME2 @31
+BUT_ONLY
+
+COPY_EXISTING ~ANIDDA_#.CRE~ ~override~
+SAY NAME1 @31
+SAY NAME2 @31
+BUT_ONLY
+
+COPY_EXISTING ~ANIDDB_#.CRE~ ~override~
+SAY NAME1 @31
+SAY NAME2 @31
+BUT_ONLY
+
+COPY_EXISTING ~ANIDDC_#.CRE~ ~override~
+SAY NAME1 @31
+SAY NAME2 @31
+BUT_ONLY
+
+COPY_EXISTING ~ANIDDD_#.CRE~ ~override~
+SAY NAME1 @31
+SAY NAME2 @31
+BUT_ONLY
+
+COPY_EXISTING ~ANIDDE_#.CRE~ ~override~
+SAY NAME1 @31
+SAY NAME2 @31
+BUT_ONLY
+
+COPY_EXISTING ~ANIDDF_#.CRE~ ~override~
+SAY NAME1 @31
+SAY NAME2 @31
+BUT_ONLY
+
+COPY_EXISTING ~ANIDDG_#.CRE~ ~override~
+SAY NAME1 @31
+SAY NAME2 @31
+BUT_ONLY
+
+COPY_EXISTING ~ANIDDH_#.CRE~ ~override~
+SAY NAME1 @31
+SAY NAME2 @31
+BUT_ONLY
+
+COPY_EXISTING ~ANIDDI_#.CRE~ ~override~
+SAY NAME1 @31
+SAY NAME2 @31
+BUT_ONLY
+
+COPY_EXISTING ~ANIGHU_#.CRE~ ~override~
+SAY NAME1 ~Ghoul~
+SAY NAME2 ~Ghoul~
+SAY BATTLE_CRY1 @34
+SAY BATTLE_CRY2 @34
+BUT_ONLY
+
+COPY_EXISTING ~ANIGHA_#.CRE~ ~override~
+SAY NAME1 ~Ghast~
+SAY NAME2 ~Ghast~
+SAY BATTLE_CRY1 @34
+SAY BATTLE_CRY2 @34
+BUT_ONLY
+
+COPY_EXISTING ~ANICAR_#.CRE~ ~override~
+SAY NAME1 ~Carrion Crawler~
+SAY NAME2 ~Carrion Crawler~
+BUT_ONLY
+
+ADD_PROJECTILE      ~override/ANISTN_#.PRO~
+
+COPY_EXISTING ~ANISTN_#.SPL~ ~override~
+WRITE_SHORT 0x98 ~%ANISTN_#%~
+BUT_ONLY
+
+COPY_EXISTING ~ANIIN2_#.SPL~ ~override~
+SAY 0x9E @35
+BUT_ONLY
+
+COPY_EXISTING ~ANIDA1_#.SPL~ ~override~
+SAY NAME1 ~Zoogies~
+BUT_ONLY
+
+COPY_EXISTING ~ANIDA2_#.SPL~ ~override~
+SAY NAME1 ~Tetanus~
+BUT_ONLY
+
+COPY_EXISTING ~ANIDA3_#.SPL~ ~override~
+SAY NAME1 ~Incher Worm~
+BUT_ONLY
+
+COPY_EXISTING ~ANIDA4_#.SPL~ ~override~
+SAY NAME1 ~Saturnine Effluvia~
+BUT_ONLY
+
+COPY_EXISTING ~ANIDA5_#.SPL~ ~override~
+SAY NAME1 ~Halaster's Disease~
+BUT_ONLY
+
+COPY_EXISTING ~ANIDA6_#.SPL~ ~override~
+SAY NAME1 ~Zoogies~
+BUT_ONLY
+
+COPY_EXISTING ~ANIDI6_#.SPL~ ~override~
+SAY 0x9E ~Wisdom and Constitution drain away.~
+BUT_ONLY
+
+COPY_EXISTING ~RABIE3_#.SPL~ ~override~
+SAY 0xCE ~After restless agitation, violence erupts!~
+BUT_ONLY
+
+COPY_EXISTING	~SPLPROT.2DA~	override	COUNT_2DA_ROWS 4 xp-4	BUT_ONLY
+APPEND ~SPLPROT.2DA~ ~%xp-4% 44 4 2~
+
+COPY_EXISTING ~ANIDI8_#.SPL~ ~override~
+LPF ALTER_SPELL_EFFECT INT_VAR match_opcode = 318 parameter2 = EVAL ~%xp-4%~ END
+BUT_ONLY
+
+COPY_EXISTING ~ANITE2_#.SPL~ ~override~
+SAY 0x9E ~Exacerbating tetanus causes complete paralysis!~
+BUT_ONLY
+
+COPY_EXISTING ~ANIDI7_#.SPL~ ~override~
+SAY 0xCE ~Miasma are clouding memory...~
+BUT_ONLY
+
+COPY_EXISTING ~ANIVI2_#.SPL~ ~override~
+SAY 0x9E @37
+BUT_ONLY
+
+COPY_EXISTING ~SPPR317.SPL~ ~override~ //cure disease
+LPF ADD_SPELL_EFFECT INT_VAR opcode = 321 timing = 1 target = 2 STR_VAR resource = ~ANIDI1_#~ END
+LPF ADD_SPELL_EFFECT INT_VAR opcode = 321 timing = 1 target = 2 STR_VAR resource = ~ANIDI2_#~ END
+LPF ADD_SPELL_EFFECT INT_VAR opcode = 321 timing = 1 target = 2 STR_VAR resource = ~ANIDI3_#~ END
+LPF ADD_SPELL_EFFECT INT_VAR opcode = 321 timing = 1 target = 2 STR_VAR resource = ~ANIDI5_#~ END
+LPF ADD_SPELL_EFFECT INT_VAR opcode = 321 timing = 1 target = 2 STR_VAR resource = ~ANIDI6_#~ END
+LPF ADD_SPELL_EFFECT INT_VAR opcode = 321 timing = 1 target = 2 STR_VAR resource = ~ANIDI7_#~ END
+LPF ADD_SPELL_EFFECT INT_VAR opcode = 321 timing = 1 target = 2 STR_VAR resource = ~RABIE2_#~ END
+LPF ADD_SPELL_EFFECT INT_VAR opcode = 321 timing = 1 target = 2 STR_VAR resource = ~RABIE3_#~ END
+BUT_ONLY
+
+COPY_EXISTING ~POTN17.ITM~ ~override~ //elixir of health
+LPF ADD_ITEM_EFFECT INT_VAR opcode = 321 timing = 1 target = 2 STR_VAR resource = ~ANIDI1_#~ END
+LPF ADD_ITEM_EFFECT INT_VAR opcode = 321 timing = 1 target = 2 STR_VAR resource = ~ANIDI2_#~ END
+LPF ADD_ITEM_EFFECT INT_VAR opcode = 321 timing = 1 target = 2 STR_VAR resource = ~ANIDI3_#~ END
+LPF ADD_ITEM_EFFECT INT_VAR opcode = 321 timing = 1 target = 2 STR_VAR resource = ~ANIDI5_#~ END
+LPF ADD_ITEM_EFFECT INT_VAR opcode = 321 timing = 1 target = 2 STR_VAR resource = ~ANIDI6_#~ END
+LPF ADD_ITEM_EFFECT INT_VAR opcode = 321 timing = 1 target = 2 STR_VAR resource = ~ANIDI7_#~ END
+LPF ADD_ITEM_EFFECT INT_VAR opcode = 321 timing = 1 target = 2 STR_VAR resource = ~RABIE2_#~ END
+LPF ADD_ITEM_EFFECT INT_VAR opcode = 321 timing = 1 target = 2 STR_VAR resource = ~RABIE3_#~ END
+IF_EXISTS
+BUT_ONLY
+
+COPY_EXISTING ~SPCL814.SPL~ ~override~ //monk disease immunity
+LPF ADD_SPELL_EFFECT INT_VAR opcode = 206 timing = 1 target = 2 STR_VAR resource = ~ANIDI1_#~ END
+LPF ADD_SPELL_EFFECT INT_VAR opcode = 206 timing = 1 target = 2 STR_VAR resource = ~ANIDI2_#~ END
+LPF ADD_SPELL_EFFECT INT_VAR opcode = 206 timing = 1 target = 2 STR_VAR resource = ~ANIDI3_#~ END
+LPF ADD_SPELL_EFFECT INT_VAR opcode = 206 timing = 1 target = 2 STR_VAR resource = ~ANIDI5_#~ END
+LPF ADD_SPELL_EFFECT INT_VAR opcode = 206 timing = 1 target = 2 STR_VAR resource = ~ANIDI6_#~ END
+LPF ADD_SPELL_EFFECT INT_VAR opcode = 206 timing = 1 target = 2 STR_VAR resource = ~ANIDI7_#~ END
+LPF ADD_SPELL_EFFECT INT_VAR opcode = 206 timing = 1 target = 2 STR_VAR resource = ~RABIE2_#~ END
+LPF ADD_SPELL_EFFECT INT_VAR opcode = 206 timing = 1 target = 2 STR_VAR resource = ~RABIE3_#~ END
+IF_EXISTS
+BUT_ONLY
+
+
+COPY_EXISTING ~STAF10.ITM~ ~override~	//Staff of curing
+LPF ADD_ITEM_EFFECT INT_VAR opcode = 321 timing = 1 target = 2 STR_VAR resource = ~ANIDI1_#~ END
+LPF ADD_ITEM_EFFECT INT_VAR opcode = 321 timing = 1 target = 2 STR_VAR resource = ~ANIDI2_#~ END
+LPF ADD_ITEM_EFFECT INT_VAR opcode = 321 timing = 1 target = 2 STR_VAR resource = ~ANIDI3_#~ END
+LPF ADD_ITEM_EFFECT INT_VAR opcode = 321 timing = 1 target = 2 STR_VAR resource = ~ANIDI5_#~ END
+LPF ADD_ITEM_EFFECT INT_VAR opcode = 321 timing = 1 target = 2 STR_VAR resource = ~ANIDI6_#~ END
+LPF ADD_ITEM_EFFECT INT_VAR opcode = 321 timing = 1 target = 2 STR_VAR resource = ~ANIDI7_#~ END
+LPF ADD_ITEM_EFFECT INT_VAR opcode = 321 timing = 1 target = 2 STR_VAR resource = ~RABIE2_#~ END
+LPF ADD_ITEM_EFFECT INT_VAR opcode = 321 timing = 1 target = 2 STR_VAR resource = ~RABIE3_#~ END
+IF_EXISTS
+BUT_ONLY
+
+ACTION_FOR_EACH Dis IN ~ANIDI1_#~ ~ANIDI2_#~ ~ANIDI3_#~ ~ANIDI4_#~ ~ANIDI5_#~ ~ANIDI6_#~ ~ANIDI7_#~ ~RABIE2_#~ ~RABIE3_#~ BEGIN //diseases don't affect NPCS
+	COPY_EXISTING ~%Dis%.spl~ ~override~
+		LPF ADD_SPELL_EFFECT INT_VAR opcode = 318 parameter1 = 2 parameter2 = 112 insert_point = 0 timing = 0 duration = 1 target = 2 STR_VAR resource = EVAL ~%Dis%~ END
+END
+
+ACTION_IF FILE_EXISTS_IN_GAME ~SPWI409.SPL~ THEN BEGIN
+
+COPY_EXISTING ~SPWI409.SPL~ ~override~
+LPF ALTER_SPELL_EFFECT INT_VAR match_opcode = 139 parameter1 = RESOLVE_STR_REF (@36) END
+BUT_ONLY
+
+END
+
+ACTION_IF FILE_EXISTS_IN_GAME ~BPSKEL.CRE~ THEN BEGIN
+
+COPY_EXISTING ~BPSKEL.CRE~ ~override~
+LPF ADD_SPELL_EFFECT INT_VAR opcode = 146 parameter2 = 1 target = 1 timing = 1 STR_VAR resource = ~DARSKE_#~ END
+BUT_ONLY
+
+END
+
+ACTION_IF FILE_EXISTS_IN_GAME ~SKELSU01.CRE~ THEN BEGIN
+
+COPY_EXISTING ~SKELSU01.CRE~ ~override~
+LPF ADD_SPELL_EFFECT INT_VAR opcode = 146 parameter2 = 1 target = 1 timing = 1 STR_VAR resource = ~DARSKE_#~ END
+BUT_ONLY
+
+END
+
+ACTION_IF FILE_EXISTS_IN_GAME ~SKELSU07.CRE~ THEN BEGIN
+
+COPY_EXISTING ~SKELSU07.CRE~ ~override~
+LPF ADD_SPELL_EFFECT INT_VAR opcode = 146 parameter2 = 1 target = 1 timing = 1 STR_VAR resource = ~DARSKE_#~ END
+BUT_ONLY
+
+END
+
+ACTION_IF FILE_EXISTS_IN_GAME ~SKELWASU.CRE~ THEN BEGIN
+
+COPY_EXISTING ~SKELWASU.CRE~ ~override~
+LPF ADD_SPELL_EFFECT INT_VAR opcode = 146 parameter2 = 1 target = 1 timing = 1 STR_VAR resource = ~DARSKE_#~ END
+BUT_ONLY
+
+END
+
+
+ACTION_IF FILE_EXISTS_IN_GAME ~DEZKIE.CRE~ THEN BEGIN
+
+COPY_EXISTING ~DEZKIE.CRE~ ~override~
+
+ADD_CRE_ITEM ~SKESEW_#~ #0 #0 #0 ~NONE~ ~INV1~
+WRITE_BYTE 0x234 13
+WRITE_SHORT 0x24 72
+WRITE_SHORT 0x26 72
+BUT_ONLY
+
+END
+
+ACTION_IF FILE_EXISTS_IN_GAME ~KUORK0.STO~ THEN BEGIN
+
+COPY_EXISTING ~KUORK2.STO~ ~override~
+
+ADD_STORE_ITEM ~SKESEW_#~ AFTER ~SCRL5K~ #0 #0 #0 ~NONE~ #1
+BUT_ONLY
+
+COPY_EXISTING ~KUORK3.STO~ ~override~
+
+ADD_STORE_ITEM ~SKESEW_#~ AFTER ~SCRL5K~ #0 #0 #0 ~NONE~ #1
+BUT_ONLY
+
+END
+
+ACTION_IF FILE_EXISTS_IN_GAME ~OHNMHSM.STO~ THEN BEGIN
+
+COPY_EXISTING ~OHNMHSM.STO~ ~override~
+
+ADD_STORE_ITEM ~SKESEW_#~ AFTER ~SCRL2D~ #0 #0 #0 ~NONE~ #3
+BUT_ONLY
+
+END
+
+ACTION_IF FILE_EXISTS_IN_GAME ~UDDROW25.STO~ THEN BEGIN
+
+COPY_EXISTING ~UDDROW25.STO~ ~override~
+
+ADD_STORE_ITEM ~SKESEW_#~ BEFORE ~SCRL7B~ #0 #0 #0 ~NONE~ #1
+BUT_ONLY
+
+END
+
+ACTION_IF FILE_EXISTS_IN_GAME ~LYROS.CRE~ THEN BEGIN
+
+COPY_EXISTING ~LYROS.CRE~ ~override~
+
+REPLACE_CRE_ITEM ~SKESEW_#~ #0 #0 #0 ~NONE~ ~INV3~
+BUT_ONLY
+
+END
+
+COPY_EXISTING ~ANIXZ1_#.SPL~ ~override~
+  SAY NAME1 ~Reckoning~
+  SAY UNIDENTIFIED_DESC ~Xzar's ability can only be used at night or indoors. It animates dead within 12 feet with zombie fighting statistics. Animating continues for 2 rounds, until all valid corpses have risen or Xzar moves. Only creatures with 6 or fewer Hit Dice can be controlled with this power. Xzar's minions do an extra point of damage when they hit, cannot be turned or, when destroyed, animated again other than by Reckoning.~ 
+  BUT_ONLY
+  
+  ADD_PROJECTILE      ~override/ANIXZ1_#.PRO~
+   ADD_PROJECTILE      ~override/ANIXZ2_#.PRO~
+   
+   COPY_EXISTING ~ANIXZ1_#.PRO~ ~override~
+   WRITE_SHORT 0x21A ~%ANIXZ2_#%~
+   BUT_ONLY
+  
+  COPY_EXISTING ~ANIXZ3_#.SPL~ ~override~
+  WRITE_SHORT 0x98 ~%ANIXZ1_#%~
+  BUT_ONLY
+
+ACTION_IF FILE_EXISTS_IN_GAME ~XZAR.CRE~ THEN BEGIN
+
+COPY_EXISTING ~XZAR.CRE~ ~override~
+
+ADD_KNOWN_SPELL ~ANIXZ1_#~ #0 ~innate~
+ADD_MEMORIZED_SPELL ~ANIXZ1_#~ #0 ~innate~ ( 1 )
+BUT_ONLY
+
+END
+
+ACTION_IF FILE_EXISTS_IN_GAME ~XZAR2.CRE~ THEN BEGIN
+
+COPY_EXISTING ~XZAR2.CRE~ ~override~
+
+ADD_KNOWN_SPELL ~ANIXZ1_#~ #0 ~innate~
+ADD_MEMORIZED_SPELL ~ANIXZ1_#~ #0 ~innate~ ( 1 )
+BUT_ONLY
+
+END
+
+ACTION_IF FILE_EXISTS_IN_GAME ~XZAR4.CRE~ THEN BEGIN
+
+COPY_EXISTING ~XZAR4.CRE~ ~override~
+
+ADD_KNOWN_SPELL ~ANIXZ1_#~ #0 ~innate~
+ADD_MEMORIZED_SPELL ~ANIXZ1_#~ #0 ~innate~ ( 1 )
+
+BUT_ONLY
+
+END
+
+ACTION_IF FILE_EXISTS_IN_GAME ~XZAR6.CRE~ THEN BEGIN
+
+COPY_EXISTING ~XZAR6.CRE~ ~override~
+
+ADD_KNOWN_SPELL ~ANIXZ1_#~ #0 ~innate~
+ADD_MEMORIZED_SPELL ~ANIXZ1_#~ #0 ~innate~ ( 1 )
+BUT_ONLY
+
+END
+
+COPY_EXISTING ~ANIFAL_#.SPL~ ~override~
+LPF ALTER_EFFECT INT_VAR match_opcode = 139 parameter1 = RESOLVE_STR_REF (@39) END
+BUT_ONLY
+
+ACTION_IF FILE_EXISTS_IN_GAME ~EMITAR2.CRE~ THEN BEGIN
+
+ACTION_IF GAME_IS ~bgee~ THEN BEGIN
+
+COPY_EXISTING ~EMITAR2.CRE~ ~override~
+SAY NAME1 ~Emissary Tar~
+SAY NAME2 ~Emissary Tar~
+WRITE_LONG 0x20 THIS & `BIT11 
+WRITE_ASCII 0x2CC ~EMITA2_#~
+WRITE_ASCII 0x250 ~INITDLG~
+SAY INITIAL_MEETING @45
+SAY SELECT_COMMON1 #4880
+SAY SELECT_COMMON2 #-1
+SAY SELECT_ACTION4 #-1
+SAY SELECT_ACTION6 #-1
+SAY DAMAGE #12556
+SAY DYING #12557
+BUT_ONLY
+
+END
+
+ACTION_IF GAME_IS ~eet~ THEN BEGIN
+
+COPY_EXISTING ~EMITAR2.CRE~ ~override~
+SAY NAME1 ~Emissary Tar~
+SAY NAME2 ~Emissary Tar~
+WRITE_LONG 0x20 THIS & `BIT11 
+WRITE_ASCII 0x2CC ~EMITA2_#~
+WRITE_ASCII 0x250 ~INITDLG~
+SAY INITIAL_MEETING @45
+SAY SELECT_COMMON1 #204880
+SAY SELECT_COMMON2 #-1
+SAY SELECT_ACTION4 #-1
+SAY SELECT_ACTION6 #-1
+SAY DAMAGE #212556
+SAY DYING #212557
+BUT_ONLY
+
+END
+
+COPY_EXISTING ~EMITAR_#.ITM~ ~override~
+SAY NAME2 ~Tar's Promissory Note~
+SAY IDENTIFIED_DESC ~I undertake to pay the presenter of this an equivalent of 1,000 danters on demand, in any currency of choice.
+
+Leonda Sabrevin Tar of Baldur's Gate.~
+BUT_ONLY
+
+END
+
+COPY_EXISTING ~NIGROM_#.SPL~ ~override~
+SAY NAME1 ~Nigromancy~
+SAY UNIDENTIFIED_DESC ~Nigromancy
+(Divination)
+
+Level: 1
+Sphere: Necromantic
+Range: 0
+Duration: Special
+Casting Time: 4
+Area of Effect: Current area
+Saving Throw: None
+
+This divination draws the caster to the location of bodies in pockets of dry ground, lost and forgotten without a proper burial, sometimes for years and decades or even in deep antiquity. Forests might have grown over them and streets might have been paved. The casting will produce an intuition of the direction. The character must not stop or become distracted to the very end, or the feeling will be lost. The bodies that are uncovered have long been abandoned by their souls and may not be raised, but they may be animated. The spell gives no guarantees that they will be useful to the priest or within <PRO_HISHER> power to animate, and, exposed to the open air, they begin to putrefy immediately.
+
+There is nothing for this spell to discover indoors, except in dungeons.~
+BUT_ONLY
+
+COPY_EXISTING ~ANILX2_#.SPL~ ~override~
+SAY NAME1 ~Too high-level for Animate Dead~
+BUT_ONLY
+
+COPY_EXISTING ~ANIMX2_#.SPL~ ~override~
+SAY NAME1 ~Too high-level for Reckoning~
+BUT_ONLY
+
+COPY_EXISTING ~UNDPRO_#.SPL~ ~override~
+LPF ALTER_SPELL_EFFECT INT_VAR match_opcode = 206 match_parameter1 = 0 parameter1 = RESOLVE_STR_REF (@46) END
+LPF ADD_SPELL_EFFECT INT_VAR opcode = 206 target = 2 duration = 9 STR_VAR resource = ~UNDPRO_#~ END
+BUT_ONLY
+
+COPY_EXISTING ~EXHUME_#.SPL~ ~override~
+SAY NAME1 ~Qlippothic Flesh~
+SAY UNIDENTIFIED_DESC ~Qlippothic Flesh
+(Necromancy)
+
+Level: 8
+Range: Touch
+Duration: Permanent
+Casting Time: 9
+Area of Effect: 1 living creature
+Saving Throw: None
+
+This spell is something of a legend among wizards. Harking supposedly to Thayan necromancers' attempts, centuries ago, to survive the most absolute forms of destruction their enemies might visit upon them (dismemberment, burning, dissolution in acid...), it was abandoned for reasons that are still debated. Cast on a living member of the party, it will change his constitution in such a way as to knit him a knew body from... stuff whenever he dies. Some sages believe this matter is from the planes bordering the Negative Material. The character will be resurrected from any kind of death - in a round at most.
+
+The same unnatural-looking color will make up the character's body and clothes, and while clothing can be changed, skin and hair remain this way. A point of Charisma is lost with every transformation, as the spell continues to deface and mutate the recipient. No one has tried to find out first hand what will happen should Charisma disappear completely. The change is irrevocable, however. The spell cannot be dispelled, and every death brings the character closer to the threshold of the unknown. Should the character be turned to stone, he will break down and reassemble immediately, even if helpers are on hand with a simple scroll of Stone to Flesh, and even ordinary death, the sort priests take care of easily enough, will still call up the eager power of this magic. Over a span of centuries with their many accidents, wizards who take a long view of the future prefer to look for other roads to immortality.
+
+The application of the charm is unpleasant and retaliated against by most people. The Thayans supposedly used dominated subjects and slaves they could pass through to a variety of deaths. No saving throw is allowed, and none of those had any magic resistance to save them. It is possible that the use of the spell was discontinued and attempts made to suppress the knowledge when their final fate was discovered.~
+BUT_ONLY
+
+COPY_EXISTING ~EXHUME_#.ITM~ ~override~
+SAY NAME2 ~Qlippothic Flesh~
+SAY IDENTIFIED_DESC ~Qlippothic Flesh
+(Necromancy)
+
+Level: 8
+Range: Touch
+Duration: Permanent
+Casting Time: 9
+Area of Effect: 1 living creature
+Saving Throw: None
+
+This spell is something of a legend among wizards. Harking supposedly to Thayan necromancers' attempts, centuries ago, to survive the most absolute forms of destruction their enemies might visit upon them (dismemberment, burning, dissolution in acid...), it was abandoned for reasons that are still debated. Cast on a living member of the party, it will change his constitution in such a way as to knit him a knew body from... stuff whenever he dies. Some sages believe this matter is from the planes bordering the Negative Material. The character will be resurrected from any kind of death - in a round at most.
+
+The same unnatural-looking color will make up the character's body and clothes, and while clothing can be changed, skin and hair remain this way. A point of Charisma is lost with every transformation, as the spell continues to deface and mutate the recipient. No one has tried to find out first hand what will happen should Charisma disappear completely. The change is irrevocable, however. The spell cannot be dispelled, and every death brings the character closer to the threshold of the unknown. Should the character be turned to stone, he will break down and reassemble immediately, even if helpers are on hand with a simple scroll of Stone to Flesh, and even ordinary death, the sort priests take care of easily enough, will still call up the eager power of this magic. Over a span of centuries with their many accidents, wizards who take a long view of the future prefer to look for other roads to immortality.
+
+The application of the charm is unpleasant and retaliated against by most people. The Thayans supposedly used dominated subjects and slaves they could pass through to a variety of deaths. No saving throw is allowed, and none of those had any magic resistance to save them. It is possible that the use of the spell was discontinued and attempts made to suppress the knowledge when their final fate was discovered.~
+BUT_ONLY
+
+OUTER_SET strref = RESOLVE_STR_REF (~Qlippothic Flesh~)
+
+ COPY_EXISTING ~STATDESC.2DA~ override
+ COUNT_2DA_COLS cols
+ COUNT_2DA_ROWS cols rows
+ SET max = 0
+ FOR (i = 0; i < rows; ++i) BEGIN
+ READ_2DA_ENTRY i 0 cols num
+ PATCH_IF num > max BEGIN max = num END
+ END
+SET max += 1
+INSERT_2DA_ROW rows cols ~%max% %strref% QLIICO_#~
+PRETTY_PRINT_2DA
+
+COPY_EXISTING ~EXHUM1_#.SPL~ ~override~
+LPF ALTER_EFFECT INT_VAR match_opcode = 206 parameter1 = RESOLVE_STR_REF (~You have already embraced the change.~) END
+LPF ALTER_EFFECT INT_VAR check_globals = 1 match_opcode = 142 parameter2 = %max% END
+BUT_ONLY
+
+COPY_EXISTING ~EXHPRO_#.EFF~ ~override~
+SAY 0x1C ~Only living beings can be transformed with Qlippothic Flesh.~
+BUT_ONLY
+
+COPY_EXISTING ~EXHUMB_#.SPL~ ~override~
+SAY NAME1 ~Qlippothic Flesh~
+SAY UNIDENTIFIED_DESC ~Qlippothic Flesh
+(Necromancy)
+
+Level: 8
+Range: Touch
+Duration: Permanent
+Casting Time: 9
+Area of Effect: Living party member
+Saving Throw: None
+
+This spell is something of a legend among wizards. Harking supposedly to Thayan necromancers' attempts, centuries ago, to survive the most absolute forms of destruction their enemies might visit upon them (dismemberment, burning, dissolution in acid...), it was abandoned for reasons that are still debated. Cast on a living member of the party, it will change his constitution in such a way as to knit him a knew body from... stuff whenever he dies. Some sages believe this matter is from the planes bordering the Negative Material. The character will be resurrected from any kind of death - in a round at most.
+
+The same unnatural-looking color will make up the character's body and clothes, and while clothing can be changed, skin and hair remain this way. A point of Charisma is lost with every transformation, as the spell continues to deface and mutate the recipient. No one has tried to find out first hand what will happen should Charisma disappear completely. The change is irrevocable, however. The spell cannot be dispelled, and every death brings the character closer to the threshold of the unknown. Should the character be turned to stone, he will break down and reassemble immediately, even if helpers are on hand with a simple scroll of Stone to Flesh, and even ordinary death, the sort priests take care of easily enough, will still call up the eager power of this magic. Over a span of centuries with their many accidents, wizards who take a long view of the future prefer to look for other roads to immortality.~
+BUT_ONLY
+
+COPY_EXISTING ~EXHUM3_#.SPL~ ~override~
+SAY 0x9E ~Charisma lost~
+BUT_ONLY
+
+COPY_EXISTING ~EXHUME_#.CRE~ ~override~
+SAY NAME1 ~Kaovxyev~
+SAY NAME2 ~Kaovxyev~
+SAY DYING @54
+BUT_ONLY
+
+ADD_PROJECTILE ~override/EXHPLC_#.PRO~
+OUTER_SET pro = (~%EXHPLC_#%~ - 1)
+
+COPY_EXISTING ~EXHPLC_#.CRE~ ~override~
+LPF ALTER_EFFECT INT_VAR match_opcode = 140 parameter1 = EVAL ~%pro%~ END
+BUT_ONLY
+
+ACTION_IF FILE_EXISTS_IN_GAME ~TANAR.CRE~ THEN BEGIN
+
+COPY_EXISTING ~TANAR.CRE~ ~override~
+ADD_CRE_ITEM ~EXHUME_#~ #0 #0 #0 ~UNSTEALABLE~ INV1
+BUT_ONLY
+
+END
+
+ACTION_IF FILE_EXISTS_IN_GAME ~QUORK3.STO~ THEN BEGIN
+
+COPY_EXISTING ~QUORK3.STO~ ~override~
+ADD_STORE_ITEM ~EXHUME_#~ AFTER ~SCRL7T~ #0 #0 #0  ~NONE~ #3
+BUT_ONLY
+
+END
+
+ACTION_IF FILE_EXISTS_IN_GAME ~HLVAXAL.CRE~ THEN BEGIN
+
+COPY_EXISTING ~HLVAXAL.CRE~ ~override~
+ADD_CRE_ITEM ~EXHUME_#~ #0 #0 #0 ~UNSTEALABLE~ INV1
+BUT_ONLY
+
+END
+
+ACTION_IF FILE_EXISTS_IN_GAME ~OHNSCRM.STO~ THEN BEGIN
+
+COPY_EXISTING ~OHNSCRM.STO~ ~override~
+ADD_STORE_ITEM ~EXHUME_#~ BEFORE ~SCRL8G~ #0 #0 #0  ~NONE~ #1
+BUT_ONLY
+
+END
+
+ACTION_IF FILE_EXISTS_IN_GAME ~OHNPRIE1.STO~ THEN BEGIN
+
+COPY_EXISTING ~OHNPRIE1.STO~ ~override~
+ADD_STORE_ITEM ~GIFTOL_#~ BEFORE ~SCRL63~ #0 #0 #0  ~NONE~ #3
+BUT_ONLY
+
+END
+
+ACTION_IF FILE_EXISTS_IN_GAME ~OHBMOLZA.STO~ THEN BEGIN
+
+COPY_EXISTING ~OHBMOLZA.STO~ ~override~
+ADD_STORE_ITEM ~GIFTOL_#~ BEFORE ~SCRL63~ #0 #0 #0  ~NONE~ #10
+BUT_ONLY
+
+END
+
+COPY_EXISTING ~FIST.ITM~ ~override~
+LPF ADD_ITEM_EQEFFECT INT_VAR opcode = 233 target = 1 parameter1 = (1 << 28) parameter2 = (89 + (0x10000 * 1)) timing = 2 END
+
+BUT_ONLY
+
+COPY_EXISTING ~ANIVIS_#.SPL~ ~override~
+SAY NAME1 ~Wrestles with~
+BUT_ONLY
+
+ACTION_IF FILE_EXISTS_IN_GAME ~SCRL63.ITM~ THEN BEGIN
+
+COPY_EXISTING ~SCRL63.ITM~ ~override~
+WRITE_LONG 0x34 700
+BUT_ONLY
+
+END
+
+COPY_EXISTING ~CDISEA_#.ITM~ ~override~
+SAY NAME2 ~Cure Disease Scroll~
+SAY IDENTIFIED_DESC ~Cure Disease Scroll
+This scroll will cure diseases, blindness, deafness, contagion and feeblemindedness.
+
+STATISTICS:
+
+– Cure Disease
+  Range: Touch
+  Area of Effect: 1 creature~
+BUT_ONLY
+
+COPY_EXISTING ~SPPR317.SPL~ ~override/CURDIS_#.SPL~
+SAY UNIDENTIFIED_DESC ~The paladin instantly cures all diseases in an individual.~
+WRITE_SHORT 0x1C 4
+WRITE_SHORT 0x74 4
+BUT_ONLY
+
+COPY_EXISTING ~SPWI409.SPL~ ~override/CAUDIS_#.SPL~
+SAY UNIDENTIFIED_DESC ~The blackguard injects a supernaturally quick-acting illness in a creature, reducing Strength, Dexterity and Charisma by 2 and slowing it. The only remedy is Cure Disease.~
+WRITE_SHORT 0x1C 4
+WRITE_SHORT 0x74 4
+BUT_ONLY
+
+COPY_EXISTING ~CAUDIS_#.SPL~ ~override~
+SAY NAME1 ~Cause Disease~
+SAY UNIDENTIFIED_DESC ~The blackguard touches someone ever so lightly and, if the victim fails a saving throw vs. poison, infests him with incher worms. This disease manifests in twitching, uncomfortable bloating and gas, which lowers the victim's Charisma by 2 points, and begins to do a point of damage two rounds later at the same interval. The application of this power does not provoke hostility until damage begins. 20% of the time the unfortunate will have obtained some cure after a day, otherwise the infestation will continue until he dies. Magic resistance is checked when the power is applied, but the condition itself cannot be dispelled, only cured. The power is not cumulative with itself.~
+BUT_ONLY
+
+OUTER_SET strref = RESOLVE_STR_REF (~Perfect Health~)
+
+ COPY_EXISTING ~STATDESC.2DA~ override
+ COUNT_2DA_COLS cols
+ COUNT_2DA_ROWS cols rows
+ SET max = 0
+ FOR (i = 0; i < rows; ++i) BEGIN
+ READ_2DA_ENTRY i 0 cols num
+ PATCH_IF num > max BEGIN max = num END
+ END
+SET max += 1
+INSERT_2DA_ROW rows cols ~%max% %strref% PERICO_#~
+PRETTY_PRINT_2DA
+
+COPY_EXISTING ~PERHEL_#.SPL~ ~override~
+LPF ALTER_EFFECT INT_VAR check_globals = 1 match_opcode = 142 parameter2 = %max% END
+BUT_ONLY
